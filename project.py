@@ -19,7 +19,8 @@ engine = create_engine('sqlite:///library.db')  # Adjust the database URL as nee
 
 # Create the Base tables for each class
 Base.metadata.create_all(engine)
-    
+# FIXME: Base.metadata.create_all(engine, checkfirst=True)
+
 # Create a Session class and bind the engine to it
 Session = sessionmaker(bind=engine)
 
@@ -97,9 +98,9 @@ def log_in_form():
     password = get_password()
     
     # Authenticate user credentials
-    if User.authenticate(session, username, password):
-        
-        return True
+    user = User.authenticate(session, username, password)
+    if user:
+        return user
     else:
         # TODO: Implemente logic to handle wrong credentials
         #       Try again or Back to main menu ???
@@ -166,7 +167,7 @@ def main():
     # TODO: Initialize adminstrator accounts
     
     # Create init menu object
-    init_menu = Menu("Library", ["Log-in as user", "Log-in as administrator", "Register user", "Exit"])
+    init_menu = Menu("Library", ["Log-in", "Log-in as administrator", "Register user", "Exit"])
     
     # Display init menu and get user input
     while True:
