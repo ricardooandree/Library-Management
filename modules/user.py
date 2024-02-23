@@ -14,7 +14,7 @@ Base = declarative_base()
 ###################################################################################################
 class User(Base):
     __tablename__ = 'users'
-    id = Column(Integer, primary_key=True)
+    _id = Column(Integer, primary_key=True)
     _username = Column(String, unique=True)
     _password = Column(String)
     _is_admin = Column(Boolean, default=False)
@@ -106,7 +106,7 @@ class User(Base):
             return None    # Authentication failed
     
     @classmethod
-    def register(session, username, password, admin=False):
+    def register(cls, session, username, password, admin=False):
         """Register new user
         
         Args: 

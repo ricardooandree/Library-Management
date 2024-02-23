@@ -155,9 +155,33 @@ class Book(Base):
             return book
         else:
             return None
+    
+    @classmethod
+    def authenticate_author(cls, session, author):
+        """Validates book author
+        
+        Args: 
+            session (Session): The SQLAlchemy session object to perform database queries.
+            author (str): The author provided for authentication.
+        
+        Returns:
+            book: If author exists in the database.
+            None: If author does not exist in the database.
+            
+        This method checks if there's a book with a specific author.
+        
+        """
+        # Query the database to find a book with the specified author
+        book = session.query(Book).filter(Book._author == author).first()
+        
+        # Check if book exists in the database
+        if book:
+            return book
+        else:
+            return None
         
     @classmethod
-    def register(session, title, author, genre, publication_date, description, price, isbn):
+    def register(cls, session, title, author, genre, publication_date, description, price, isbn):
         """Register a new book in the database
         
         Args:

@@ -47,6 +47,18 @@ def get_title():
             print("Please enter title\n")
             
             
+def get_author():
+    """Get author input from the user"""
+    
+    # Get user author
+    while True:
+        author = input("Enter author: ")
+        if author:
+            return author
+        else:
+            print("Please enter author\n")
+            
+            
 def search_by_title():
     """Search book by title, gets user input and handles validation cases"""
     
@@ -59,6 +71,21 @@ def search_by_title():
         book.display_metadata()
     else:
         print("Invalid title or the library doesn't own the book\n")
+        # TODO: Redirects to main menu
+        
+        
+def search_by_author():
+    """Search book by author, gets user input and handles validation cases"""
+    
+    # Get user author input
+    author = get_author()
+    
+    # Authenticates book author by validating the author and searching for it in the database
+    book = Book.authenticate_author(session, author)
+    if book:
+        book.display_metadata()
+    else:
+        print("Invalid author or the library doesn't own the book\n")
         # TODO: Redirects to main menu
         
         
@@ -76,7 +103,7 @@ def search_book():
             case "1":
               search_by_title()
             case "2":
-              ...     #search_by_author()
+              search_by_author()
             case "3":
               ...     #search_by_genre()
             case "4":

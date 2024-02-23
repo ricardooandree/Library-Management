@@ -1,7 +1,7 @@
 {
     "books": [
-        {"title": "book1", "author": "author1", "genre": "genre1", "publication_date": "23-02-2024", "description": "description1", "price": "9.99", "isbn": "123-4-56-789123-0"},
-        {"title": "book2", "author": "author2", "genre": "genre2", "publication_date": "24-02-2024", "description": "description2", "price": "10.00", "isbn": "987-6-54-321987-0"},
-        {"title": "book3", "author": "author3", "genre": "genre3", "publication_date": "25-02-2024", "description": "description3", "price": "4.99", "isbn": "654-3-16-148410-0"}
+        {"title": "book1", "author": "author1", "genre": "genre1", "publication_date": "23-02-2024", "description": "description1", "price": 9.99, "isbn": "123-4-56-789123-0"},
+        {"title": "book2", "author": "author2", "genre": "genre2", "publication_date": "24-02-2024", "description": "description2", "price": 10.00, "isbn": "987-6-54-321987-0"},
+        {"title": "book3", "author": "author3", "genre": "genre3", "publication_date": "25-02-2024", "description": "description3", "price": 4.99, "isbn": "654-3-16-148410-0"}
     ]
 }
