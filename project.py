@@ -5,11 +5,12 @@ import os
 import sys
 import random 
 
+from modules.user import Base
 from modules.menu import Menu
-from modules.user import User, Base
+from modules.user import User
 from modules.book import Book
 from modules.transaction import Transaction
-from modules.config import load_admin_accounts
+from modules.config import load_admin_accounts, load_books
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 ###################################################################################################
@@ -29,6 +30,64 @@ Session = sessionmaker(bind=engine)
 session = Session()
 ###################################################################################################
 #####################################       FUNCTIONS        ######################################
+###################################################################################################
+
+###################################################################################################
+###################################       SEARCH BOOKS        #####################################
+###################################################################################################
+def get_title():
+    """Get title input from the user"""
+    
+    # Get user title
+    while True:
+        title = input("Enter title: ")
+        if title:
+            return title
+        else:
+            print("Please enter title\n")
+            
+            
+def search_by_title():
+    """Search book by title, gets user input and handles validation cases"""
+    
+    # Get user title input
+    title = get_title()
+    
+    # Authenticates book title by validating the title and searching for it in the database
+    book = Book.authenticate_title(session, title)
+    if book:
+        book.display_metadata()
+    else:
+        print("Invalid title or the library doesn't own the book\n")
+        # TODO: Redirects to main menu
+        
+        
+def search_book():
+    """Search book"""
+    
+    # Create search book menu object
+    search_book_menu = Menu("Search Book", ["Search by title", "Search by author", "Search by genre", "Search by publication date", "Exit"])
+    
+    # Display search book menu and get user input
+    while True:
+        choice = search_book_menu.display()
+        
+        match choice:
+            case "1":
+              search_by_title()
+            case "2":
+              ...     #search_by_author()
+            case "3":
+              ...     #search_by_genre()
+            case "4":
+              ...     #search_by_publication_date()
+            case "5":
+                sys.exit()
+            case _:
+                raise ValueError("Invalid input")
+            
+###################################################################################################
+################################       LOGIN/REGISTRATION        ##################################
 ###################################################################################################
 def get_username():
     """Get username input from the user"""
@@ -65,7 +124,7 @@ def get_password_confirm():
         else:
             print("Please enter password confirmation\n")
             
-            
+
 def register_form():
     """Register form, gets user input, validates it and handles validation cases"""
     
@@ -92,6 +151,7 @@ def register_user():
 
     # TODO: Display main menu
 
+
 def log_in_form():
     """Log in form, gets user input, validates it and handles validation cases"""
     
@@ -107,7 +167,7 @@ def log_in_form():
         # NOTE: Current implementation: wrong credentials -> redirects to initial menu
         print("Wrong credentials\n")
         init_menu()
-
+          
     
 # FIXME: Implement user menu and admin menu on an auxiliar function
 def log_in_user():
@@ -146,7 +206,7 @@ def log_in_user():
             
             match choice:
                 case "1":
-                    ...     #search_book()
+                    search_book()
                 case "2":
                     ...     #rent_book()
                 case "3":
@@ -158,7 +218,10 @@ def log_in_user():
                 case _:
                     print("Invalid input")
         
-        
+
+###################################################################################################
+################################       INITIALIZATION/MAIN        #################################
+###################################################################################################
 def init_menu():
     """Display the initial menu"""
     
@@ -185,7 +248,10 @@ def main():
     
     # Load admin accounts
     load_admin_accounts(session, "admin_accounts.json")
-        
+    
+    # Load books
+    load_books(session, "books.json")
+    
     # Calls init menu to be displayed
     init_menu()
     

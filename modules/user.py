@@ -1,8 +1,9 @@
 ###################################################################################################
 #######################################       IMPORTS       #######################################
 ###################################################################################################
-from sqlalchemy import Column, Integer, String, Boolean
+from sqlalchemy import Column, Integer, String, Boolean, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import relationship
 from werkzeug.security import check_password_hash, generate_password_hash
 
 # Configuration
@@ -17,11 +18,11 @@ class User(Base):
     _username = Column(String, unique=True)
     _password = Column(String)
     _is_admin = Column(Boolean, default=False)
-    # is_admin_column = Column(Boolean, default=False)
     
     # TODO: Define relationships
     
-    # Define getter methods for attributes FIXME: remove getters for non-needed attributes - safety concerns
+    # Define getter methods for attributes FIXME: Remove getters for non-needed attributes - safety concerns
+    #                                      NOTE:  Only getter in use atm: is_admin
     def get_username(self):
         return self._username
     
@@ -31,7 +32,7 @@ class User(Base):
     def get_is_admin(self):
         return self._is_admin
     
-    # Definer setter methods for attributes  FIXME: remove setters for non-needed attributes - safety concerns
+    # Definer setter methods for attributes  FIXME: Remove setters for non-needed attributes - safety concerns
     def set_username(self, value):
         self._username = value
         
@@ -69,8 +70,8 @@ class User(Base):
             if password == confirm_password:
                 # TODO: Check if password meets safety requirements
                 return True    # Validation successful
-            
-        return False    # Validation failed
+        else:    
+            return False    # Validation failed
         
     @classmethod
     def authenticate(cls, session, username, password):
@@ -96,8 +97,8 @@ class User(Base):
             # Check if the input password is correct
             if check_password_hash(user._password, password):
                 return user    # Authentication successful
-            
-        return None    # Authentication failed
+        else:
+            return None    # Authentication failed
     
     @classmethod
     def register(cls, session, username, password, admin=False):
