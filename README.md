@@ -7,3 +7,5 @@ CLI library management system application
 - **RegEx**
 - **Exceptions**
 - **Databases**
+
+NOTE: Unlike Java, Python will allow me to access private attributes outside my class even though its bad practice
