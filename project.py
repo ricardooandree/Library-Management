@@ -9,6 +9,7 @@ from modules.menu import Menu
 from modules.user import User, Base
 from modules.book import Book
 from modules.transaction import Transaction
+from modules.config import load_admin_accounts
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 ###################################################################################################
@@ -68,7 +69,7 @@ def get_password_confirm():
 def register_form():
     """Register form, gets user input, validates it and handles validation cases"""
     
-    # Get user input
+    # Get user registration input
     username = get_username()
     password = get_password()
     password_confirm = get_password_confirm()
@@ -76,24 +77,25 @@ def register_form():
     # Validate credentials
     if User.validate(session, username, password, password_confirm):
         # Register user
-        User.register(session, username, password)
+        return User.register(session, username, password)
     else:
-        # TODO: Implemente logic to handle wrong credentials
-        #       Try again or Back to main menu ???
-        ...
+        # NOTE: Current implementation: wrong credentials -> redirects to initial menu
+        print("User already exists or password doesn't match password confirmation\n")
+        init_menu()
     
 
 def register_user():
     """Register user"""
     
-    # TODO: User register form with username and password before accessing the menu
-    register_form()
+    # Calls user registration form and handles the registration validation
+    user = register_form()
 
+    # TODO: Display main menu
 
 def log_in_form():
     """Log in form, gets user input, validates it and handles validation cases"""
     
-    # Get user input
+    # Get user login input
     username = get_username()
     password = get_password()
     
@@ -102,72 +104,66 @@ def log_in_form():
     if user:
         return user
     else:
-        # TODO: Implemente logic to handle wrong credentials
-        #       Try again or Back to main menu ???
-        ...
+        # NOTE: Current implementation: wrong credentials -> redirects to initial menu
+        print("Wrong credentials\n")
+        init_menu()
+
     
-    
+# FIXME: Implement user menu and admin menu on an auxiliar function
 def log_in_user():
     """Logs in as a user"""
 
-    # TODO: User login form with username and password before accessing the menu
-    log_in_form()
-    
-    # Create user main menu object
-    main_menu = Menu("User Menu", ["Search book", "Rent book", "Return book", "User information", "Exit"])
-    
-    # Display main menu and get user input
-    while True:
-        choice = main_menu.display()
-        
-        match choice:
-            case "1":
-                ...     #search_book()
-            case "2":
-                ...     #rent_book()
-            case "3":
-                ...     #return_book()
-            case "4":
-                ...     #user_information()
-            case "5":
-                sys.exit()
-            case _:
-                print("Invalid input")    
+    # Calls user login form and handles the login authentication
+    user = log_in_form()
 
-
-def log_in_admin():
-    """Logs in as a administrator"""
-    
-    # TODO: User login form with username and password before accessing the menu
-    log_in_form()
-    
-    # Create adminstrator main menu object
-    admin_menu = Menu("Admin Menu", ["List rented books", "List available books", "Show balance", "Exit"])
-    
-    # Display admin menu and get user input
-    while True:
-        choice = admin_menu.display()
+    # Check if user is admin or not and displays the corresponding menu
+    if user.get_is_admin():   
+        # Create admin main menu object
+        main_menu = Menu("Admin Menu", ["List rented books", "List available books", "Show balance", "Exit"])
         
-        match choice:
-            case "1":
-                ...     #list_rented_books()
-            case "2":
-                ...     #list_available_books()
-            case "3":
-                ...     #show_balance()
-            case "4":
-                sys.exit()
-            case _:
-                raise ValueError("Invalid input")
-    
-    
-def main():
-    """Main function"""
-    
-    # TODO: Initialize adminstrator accounts
+        # Display admin menu and get user input
+        while True:
+            choice = main_menu.display()
+            
+            match choice:
+                case "1":
+                    ...     #list_rented_books()
+                case "2":
+                    ...     #list_available_books()
+                case "3":
+                    ...     #show_balance()
+                case "4":
+                    sys.exit()
+                case _:
+                    raise ValueError("Invalid input") 
+    else:  
+        # Create user main menu object
+        main_menu = Menu("User Menu", ["Search book", "Rent book", "Return book", "User information", "Exit"])
+        
+        # Display main menu and get user input
+        while True:
+            choice = main_menu.display()
+            
+            match choice:
+                case "1":
+                    ...     #search_book()
+                case "2":
+                    ...     #rent_book()
+                case "3":
+                    ...     #return_book()
+                case "4":
+                    ...     #user_information()
+                case "5":
+                    sys.exit()
+                case _:
+                    print("Invalid input")
+        
+        
+def init_menu():
+    """Display the initial menu"""
     
     # Create init menu object
-    init_menu = Menu("Library", ["Log-in", "Log-in as administrator", "Register user", "Exit"])
+    init_menu = Menu("Library", ["Log-in", "Register", "Exit"])
     
     # Display init menu and get user input
     while True:
@@ -177,13 +173,21 @@ def main():
             case "1":
                 log_in_user()
             case "2":
-                log_in_admin()
-            case "3":
                 register_user()
-            case "4":
+            case "3":
                 sys.exit()
             case _:
                 print("Invalid input")
+          
+                
+def main():
+    """Main function"""
+    
+    # Load admin accounts
+    load_admin_accounts(session, "admin_accounts.json")
+        
+    # Calls init menu to be displayed
+    init_menu()
     
 
 if __name__ == "__main__":
