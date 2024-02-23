@@ -40,4 +40,3 @@ def load_books(session, file_path):
         if Book.validate(session, book['isbn']):
             # Register book
             Book.register(session, book['title'], book['author'], book['genre'], book['publication_date'], book['description'], book['price'], book['isbn'])
-            print("registered")

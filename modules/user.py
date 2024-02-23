@@ -21,8 +21,26 @@ class User(Base):
     
     # TODO: Define relationships
     
-    # Define getter methods for attributes FIXME: Remove getters for non-needed attributes - safety concerns
-    #                                      NOTE:  Only getter in use atm: is_admin
+    # Define setter methods for attributes
+    def set_username(self, username):
+        if isinstance(username, str):
+            self._username = username
+        else:
+            raise ValueError("Username must be a string")
+    
+    def set_password(self, password):
+        if isinstance(password, str):
+            self._password = generate_password_hash(password)
+        else:
+            raise ValueError("Password must be a string")
+    
+    def set_is_admin(self, is_admin):
+        if isinstance(is_admin, bool):
+            self._is_admin = is_admin
+        else:
+            raise ValueError("is_admin must be a boolean")
+    
+    # Define getter methods for attributes
     def get_username(self):
         return self._username
     
@@ -32,24 +50,11 @@ class User(Base):
     def get_is_admin(self):
         return self._is_admin
     
-    # Definer setter methods for attributes  FIXME: Remove setters for non-needed attributes - safety concerns
-    def set_username(self, value):
-        self._username = value
-        
-    def set_password(self, value):
-        self._password = value
-    
-    def set_is_admin(self, value):
-        if isinstance(value, bool):
-            self._is_admin = value
-        else:
-            raise ValueError("is_admin must be True or False")
-        
-    @staticmethod
-    def validate(session, username, password, confirm_password):
+    @classmethod
+    def validate(cls, session, username, password, confirm_password):
         """Validates user registration credentials
         
-        Args: 
+        Args:
             session (Session): The SQLAlchemy session object to perform database queries.
             username (str): The username provided during registration.
             password (str): The password provided during registration.
@@ -58,7 +63,7 @@ class User(Base):
         Returns:
             bool: True if the credentials are valid, False otherwise.
             
-        This method checks if the username is available (not already taken) and if the password matches the password confirmation. Additionally, it checks for password complexity requirements in the future.
+        This method checks if the username is available (not already taken) and if the password matches the password confirmation. Additionally, it checks for password complexity requirements.
         
         """
         # Query the database to find a user with the specified username
@@ -77,16 +82,16 @@ class User(Base):
     def authenticate(cls, session, username, password):
         """Authenticates user login credentials
         
-        Args: 
+        Args:
             session (Session): The SQLAlchemy session object to perform database queries.
-            username (str): The username provided during login.
-            password (str): The password provided during login.
+            username (str): The username provided for authentication.
+            password (str): The password provided for authentication.
         
         Returns:
             user: If the credentials are valid
             None: If the credentials are invalid
             
-        This method checks if the username exists in the database and if the password of that user matches the one in the database.
+        This method checks if the username exists in the database and if it does, checks if the password of that user matches the one in the database.
         
         """
         # Query the database to find the username
@@ -95,19 +100,19 @@ class User(Base):
         # Check if user was found with the specified username
         if user:
             # Check if the input password is correct
-            if check_password_hash(user._password, password):
+            if check_password_hash(user.get_password(), password):
                 return user    # Authentication successful
         else:
             return None    # Authentication failed
     
     @classmethod
-    def register(cls, session, username, password, admin=False):
+    def register(session, username, password, admin=False):
         """Register new user
         
         Args: 
             session (Session): The SQLAlchemy session object to perform database queries.
-            username (str): The username provided during registration.
-            password (str): The password provided during registration.
+            username (str): The username provided during registration or configuration set up.
+            password (str): The password provided during registration or configuration set up.
             admin (bool): Default set to False, True if admin is to be registrated.
         
         Returns:
@@ -117,21 +122,18 @@ class User(Base):
         This method creates a new user with the given credentials and adds it to the database.
         
         """
-        # Hash password
-        hashed_password = generate_password_hash(password)
-        
         # Create a new User object
         new_user = User()
         
         # Check if new_user was created successfully
         if new_user:
             # Set new user credentials
-            new_user._username = username
-            new_user._password = hashed_password
+            new_user.set_username(username)
+            new_user.set_password(password)    # Password is hashed in set_password
             
             # Check if new_user is admin
             if admin:
-                new_user._is_admin = True
+                new_user.set_is_admin(True)
             
             # Add the new user to the session and commit to the database
             session.add(new_user)

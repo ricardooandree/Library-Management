@@ -149,7 +149,8 @@ def register_user():
     # Calls user registration form and handles the registration validation
     user = register_form()
 
-    # TODO: Display main menu
+    # TODO: Calls main menu
+    
 
 
 def log_in_form():
@@ -164,7 +165,6 @@ def log_in_form():
     if user:
         return user
     else:
-        # NOTE: Current implementation: wrong credentials -> redirects to initial menu
         print("Wrong credentials\n")
         init_menu()
           
@@ -246,10 +246,10 @@ def init_menu():
 def main():
     """Main function"""
     
-    # Load admin accounts
+    # Load admin accounts into the database
     load_admin_accounts(session, "admin_accounts.json")
     
-    # Load books
+    # Load books into the database
     load_books(session, "books.json")
     
     # Calls init menu to be displayed
