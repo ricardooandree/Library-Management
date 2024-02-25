@@ -35,18 +35,22 @@ session = Session()
 ###################################################################################################
 ###################################       SEARCH BOOKS        #####################################
 ###################################################################################################
-# FIXME: ERROR CHECKING FOR GET_BOOK_ATTRIBUTES 
 # FIXME: REDIRECTING TO MAIN MENU
+# FIXME: BETTER USER INPUT VALIDATION
 def get_title():
     """Get title input from the user"""
     
     # Get user title
     while True:
+        print("Usage example: OOP Python Fundamentals")
+        
         title = input("Enter title: ")
+        
+        # Ensures input is not an empty string
         if title:
             return title
         else:
-            print("Please enter title\n")
+            print("Invalid title\n")
             
             
 def get_author():
@@ -54,11 +58,15 @@ def get_author():
     
     # Get user author
     while True:
+        print("Usage example: Ricardo Silva")
+        
         author = input("Enter author: ")
+        
+        # Ensures input is not an empty string
         if author:
             return author
         else:
-            print("Please enter author\n")
+            print("Invalid author name\n")
             
             
 def get_publisher():
@@ -66,11 +74,15 @@ def get_publisher():
     
     # Get user publisher
     while True:
+        print("Usage example: HarperCollins")
+        
         publisher = input("Enter publisher: ")
+        
+        # Ensures input is not an empty string
         if publisher:
             return publisher
         else:
-            print("Please enter publisher\n")
+            print("Invalid publisher\n")
             
             
 def get_genre():
@@ -78,11 +90,15 @@ def get_genre():
     
     # Get user author
     while True:
+        print("Usage example: Educational")
+        
         genre = input("Enter genre: ")
+        
+        # Ensures input is not an empty string
         if genre:
             return genre
         else:
-            print("Please enter genre\n")
+            print("Invalid genre\n")
             
        
 def get_edition():
@@ -90,12 +106,16 @@ def get_edition():
     
     # Get user edition
     while True:
-        edition = input("Enter edition: ")
-        # TODO: Error checking - integer
-        if edition:
-            return edition
-        else:
-            print("Please enter edition\n")
+        print("Usage example: 1")
+        
+        # Ensures input is an integer value higher than zero
+        try: 
+            edition = int(input("Enter edition: "))
+
+            if edition > 0:
+                return edition
+        except ValueError:
+            print("Invalid edition\n")
             
 
 def get_publication_date():
@@ -103,12 +123,30 @@ def get_publication_date():
     
     # Get user publication date
     while True:
-        publication_date = input("Enter publication date: ")
-        # TODO: Error checking - date
-        if publication_date:
+        print("Usage example: 25-02-2024")
+        
+        # Ensures input is of type dd-mm-yyyy and each element is between expected real values
+        try:
+            publication_date = input("Enter publication date: ")
+            
+            day, month, year = map(int, publication_date.split('-'))
+            
+            if not 1 <= day <= 31:
+                print("Invalid day\n")
+                continue
+            
+            elif not 1 <= month <= 12:
+                print("Invalid month\n")
+                continue
+                
+            elif not 1800 <= year <= 2100:
+                print("Invalid year\n")
+                continue
+                
             return publication_date
-        else:
-            print("Please enter publication date\n")
+            
+        except ValueError:
+            print("Invalid publication date\n")
 
 
 def get_price():
@@ -116,12 +154,16 @@ def get_price():
     
     # Get user price
     while True:
-        price = input("Enter price: ")
-        # TODO: Error checking - float
-        if price:
-            return price
-        else:
-            print("Please enter price\n")
+        print("Usage example: 9.99")
+        
+        # Ensures input if float higher than zero
+        try:
+            price = float(input("Enter price: "))
+
+            if price > 0:
+                return price
+        except ValueError:
+            print("Invalid price\n")
             
 
 def search_by_title():
@@ -135,7 +177,7 @@ def search_by_title():
     if books:
         Book.display_metadata(books)
     else:
-        print("Invalid title or the library doesn't own any book with that title\n")
+        print("The library doesn't own any book with that title\n")
         # TODO: Redirects to main menu
         
         
@@ -150,7 +192,7 @@ def search_by_author():
     if books:
         Book.display_metadata(books)
     else:
-        print("Invalid author or the library doesn't own any books of that author\n")
+        print("The library doesn't own any books of that author\n")
         # TODO: Redirects to main menu
         
 
@@ -165,7 +207,7 @@ def search_by_publisher():
     if books:
         Book.display_metadata(books)
     else:
-        print("Invalid publisher or the library doesn't own any books of that publisher\n")
+        print("The library doesn't own any books of that publisher\n")
         # TODO: Redirects to main menu
         
         
@@ -180,7 +222,7 @@ def search_by_genre():
     if books:
         Book.display_metadata(books)
     else:
-        print("Invalid genre or the library doesn't own any books of that genre\n")
+        print("The library doesn't own any books of that genre\n")
         # TODO: Redirects to main menu
     
 
@@ -195,7 +237,7 @@ def search_by_edition():
     if books:
         Book.display_metadata(books)
     else:
-        print("Invalid edition or the library doesn't own any books of that edition\n")
+        print("The library doesn't own any books of that edition\n")
         # TODO: Redirects to main menu
         
 
@@ -210,7 +252,7 @@ def search_by_publication_date():
     if books:
         Book.display_metadata(books)
     else:
-        print("Invalid publication date or the library doesn't own any books of that publication date\n")
+        print("The library doesn't own any books of that publication date\n")
         # TODO: Redirects to main menu
         
 
@@ -225,7 +267,7 @@ def search_by_price():
     if books:
         Book.display_metadata(books)
     else:
-        print("Invalid price or the library doesn't own any books of that price\n")
+        print("The library doesn't own any books of that price\n")
         # TODO: Redirects to main menu
         
         
@@ -325,7 +367,6 @@ def register_user():
     # TODO: Calls main menu
     
 
-
 def log_in_form():
     """Log in form, gets user input, validates it and handles validation cases"""
     
@@ -352,6 +393,7 @@ def log_in_user():
     # Check if user is admin or not and displays the corresponding menu
     if user.get_is_admin():   
         # Create admin main menu object
+        # TODO: Add book, remove book
         main_menu = Menu("Admin Menu", ["List rented books", "List available books", "Show balance", "Exit"])
         
         # Display admin menu and get user input
@@ -423,7 +465,7 @@ def main():
     load_admin_accounts(session, "admin_accounts.json")
     
     # Load books into the database
-    load_books(session, "books.json")
+    load_books(session, "books_test.json")
     
     # Calls init menu to be displayed
     init_menu()

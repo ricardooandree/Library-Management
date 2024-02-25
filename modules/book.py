@@ -1,16 +1,41 @@
 ###################################################################################################
 #######################################       IMPORTS       #######################################
 ###################################################################################################
+import re
 from sqlalchemy import Column, Integer, Float, String, Boolean, ForeignKey
 from sqlalchemy.orm import relationship
 from modules.user import Base
 from tabulate import tabulate
 
 ###################################################################################################
-#######################################       CLASSES       #######################################
+#######################################       HELPERS       #######################################
 ###################################################################################################
 headers = ["Title", "Author", "Publisher", "Genre", "Edition", "Publication Date", "Description", "Price", "ISBN"]
 
+# Helper function for string attributes validation
+def basic_string_attribute_validation(string, attribute):
+    if isinstance(string, str):
+        if not string[0].isalpha() or not string[-1].isalpha():
+            return f"{attribute} must not start or end with non-alphabetical characters"
+        
+        elif len(string) > 100:
+            return f"{attribute} must have a maximum of 100 characters"      
+        else:
+            return True
+    else:
+        return f"{attribute} must be an string"
+        
+###################################################################################################
+#######################################       CLASSES       #######################################
+###################################################################################################
+class BookMismatchError(Exception):
+    """Exception raised when provided book data does not match existing book"""
+
+    def __init__(self, message):
+        self.message = message
+        super().__init__(self.message)
+        
+        
 class Book(Base):
     __tablename__ = 'books'
     # Common attributes to each book object
@@ -26,68 +51,148 @@ class Book(Base):
     # Unique attributes to each book object
     _isbn = Column(String, unique=True)
     _quantity = Column(Integer)
-    
+            
     # Define setter methods for attributes
     def set_title(self, title):
-        if isinstance(title, str):
-            self._title = title
-        else:
-            raise ValueError("Title must be a string")
+        # Call auxiliar function to validate basic string attribute features
+        validation_result = basic_string_attribute_validation(title, attribute='Title')
+        
+        if isinstance(validation_result, str):
+            raise ValueError(validation_result)
+
+        # Set title attribute
+        self._title = title
         
     def set_author(self, author):
-        if isinstance(author, str):
-            self._author = author
-        else:
-            raise ValueError("Author must be a string")
-    
-    def set_publisher(self, publisher):
-        if isinstance(publisher, str):
-            self._publisher = publisher
-        else:
-            raise ValueError("Publisher must be a string")
+        # Call auxiliar function to validate basic string attribute features
+        validation_result = basic_string_attribute_validation(author, attribute='Author')
         
+        if isinstance(validation_result, str):
+            raise ValueError(validation_result)
+    
+        # Pattern FirstName LastName for author attribute and validation
+        pattern = r'^[a-zA-Z]+\s[a-zA-Z]+$'
+        if not re.match(pattern, author):
+            raise ValueError("Author string should be of pattern: FirstName LastName with alphabetic characters only")
+        
+        # Set author attribute
+        self._author = author
+
+    def set_publisher(self, publisher):
+        # Call auxiliar function to validate basic string attribute features
+        validation_result = basic_string_attribute_validation(publisher, attribute='Publisher')
+        
+        if isinstance(validation_result, str):
+            raise ValueError(validation_result)
+        
+        # Set publisher attribute
+        self._publisher = publisher
+
     def set_genre(self, genre):
-        if isinstance(genre, str):
-            self._genre = genre
-        else:
-            raise ValueError("Genre must be a string")
+        # Call auxiliar function to validate basic string attribute features
+        validation_result = basic_string_attribute_validation(genre, attribute='Genre')
+        
+        if isinstance(validation_result, str):
+            raise ValueError(validation_result)
+
+        # Set genre attribute
+        self._genre = genre
     
     def set_edition(self, edition):
-        if isinstance(edition, int):
-            self._edition = edition
-        else:
+        # Edition attribute validation
+        if not isinstance(edition, int):
             raise ValueError("Edition must be an integer")
         
+        if edition <= 0:
+            raise ValueError("Edition must be a positive integer")
+        
+        # Set edition attribute
+        self._edition = edition
+        
     def set_publication_date(self, publication_date):
-        if isinstance(publication_date, str):
-            self._publication_date = publication_date
-        else:
+        # Publication date attribute validation
+        if not isinstance(publication_date, str):
             raise ValueError("Publication date must be a string")
-    
+
+        try:
+            day, month, year = map(int, publication_date.split('-'))
+
+        except ValueError:
+            raise ValueError("Publication date must be of format dd-mm-yyyy")
+        
+        if not 1 <= day <= 31:
+            raise ValueError("Publication date day must be in between 1 and 31")
+        
+        if not 1 <= month <= 12:
+            raise ValueError("Publication date month must be in between 1 and 12")
+            
+        if not 1800 <= year <= 2100:
+            raise ValueError("Publication date year must be in between 1800 and 2100")
+        
+        # Set publication date attribute
+        self._publication_date = publication_date
+
     def set_description(self, description):
-        if isinstance(description, str):
-            self._description = description
-        else:
+        # Description attribute validation
+        if not isinstance(description, str):
             raise ValueError("Description must be a string")
-    
+
+        if len(description) > 500:
+            raise ValueError("Description must have a maximum of 500 characters")
+
+        if not description[0].isalpha() or not description[-1].isalpha():
+            raise ValueError("Description must not start or end with non-alphabetical characters")
+
+        # Set the description
+        self._description = description
+
     def set_price(self, price):
-        if isinstance(price, float):
-            self._price = price
-        else:
+        # Price attribute validation
+        if not isinstance(price, float):
             raise ValueError("Price must be a float")
         
-    # FIXME: Add extra validation for isbn field needs to be a string like: '123-4-56-789123-0'
+        if price <= 0:
+            raise ValueError("Price must be a positive float")
+        
+        # Set price attribute
+        self._price = price
+
     def set_isbn(self, isbn):
-        if isinstance(isbn, str):
-            self._isbn = isbn
-        else:
+        # ISBN attribute validation
+        if not isinstance(isbn, str):
             raise ValueError("ISBN must be a string")
-    
+        
+        try:
+            group1, group2, group3, group4, group5 = isbn.split('-')
+        
+        except ValueError:
+            raise ValueError("ISBN must be of format 123-4-56-789012-3")
+        
+        if not group1.isdigit() or not len(group1) == 3:
+            raise ValueError("ISBN first set must be a number and have 3 digits")
+        
+        if not group2.isdigit() or not len(group2) == 1:
+            raise ValueError("ISBN second set must be a number and have 1 digit")
+        
+        if not group3.isdigit() or not len(group3) == 2:
+            raise ValueError("ISBN third set must be a number and have 2 digits")
+        
+        if not group4.isdigit() or not len(group4) == 6:
+            raise ValueError("ISBN fourth set must be a number and have 6 digits")
+        
+        if not group5.isdigit() or not len(group5) == 1:
+            raise ValueError("ISBN fifth set must be a number and have 1 digit")
+        
+        # Set ISBN attribute
+        self._isbn = isbn
+            
     def set_quantity(self, quantity):
-        if isinstance(quantity, int):
-            self._quantity = quantity
-        else:
+        # Quantity attribute validation
+        if not isinstance(quantity, int):
             raise ValueError("Quantity must be a boolean")
+        
+        # Set quantity attribute
+        self._quantity = quantity
         
     # Define getter methods for attributes
     def get_title(self):
@@ -376,12 +481,21 @@ class Book(Base):
             return False    # Failed to register a new book
         
     @classmethod
-    def add(cls, session, isbn):
+    def add(cls, session, title, author, publisher, genre, edition, publication_date, description, price, isbn):
         """Add a new book to the database
         
         Args:
             session (Session): The SQLAlchemy session object to perform database queries.
-             isbn (str): the isbn provided to search for the book.
+            title (str): The title provided to validate the book to be added to the database.
+            author (str): The author provided to validate the book to be added to the database.
+            publisher (str): The publisher provided to validate the book to be added to the database.
+            genre (str): The genre provided to validate the book to be added to the database.
+            edition (int): The edition provided to validate the book to be added to the database.
+            publication_date (string): The publication_date provided to validate the book to be added to the database.
+            description (str): The description provided to validate the book to be added to the database.
+            price (float): The price provided to vlaidate the book to be added to the database.
+            isbn (str): The isbn provided to search for the book.
+            
         Returns: 
             bool: True if successfully added a new book, false otherwise.
             
@@ -392,23 +506,33 @@ class Book(Base):
         
         # Check if book exists in the database
         if book:
+            # Check if provided book data matches existing book
+            attributes = {
+                'title': title,
+                'author': author,
+                'publisher': publisher,
+                'genre': genre,
+                'edition': edition,
+                'publication_date': publication_date,
+                'description': description,
+                'price': price
+            }
+            
+            for attr, value in attributes.items():
+                if getattr(book, f"get_{attr}")() != value:
+                    raise BookMismatchError(f"Provided {attr} does not match existing book with ISBN: {isbn}")
+            
             # Update the quantity of the book
             book.set_quantity(book.get_quantity() + 1)
             
             # Commit the changes to the database
             session.commit()
-            
-            return True    # Sucessfully added a new book
+
+            return True    # Successfully added a new book
         else:
             return False   # Failed to add a new book
         
-        
-        
-        
-        
-        
-        
-        
+
         
         
         

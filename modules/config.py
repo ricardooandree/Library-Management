@@ -42,4 +42,4 @@ def load_books(session, file_path):
             Book.register(session, book['title'], book['author'], book['publisher'], book['genre'], book['edition'], book['publication_date'], book['description'], book['price'], book['isbn'])
         else:
             # Adds copy of the book
-            Book.add(session, book['isbn'])
+            Book.add(session, book['title'], book['author'], book['publisher'], book['genre'], book['edition'], book['publication_date'], book['description'], book['price'], book['isbn'])
