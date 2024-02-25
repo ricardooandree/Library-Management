@@ -9,19 +9,23 @@ from tabulate import tabulate
 ###################################################################################################
 #######################################       CLASSES       #######################################
 ###################################################################################################
+headers = ["Title", "Author", "Publisher", "Genre", "Edition", "Publication Date", "Description", "Price", "ISBN"]
+
 class Book(Base):
     __tablename__ = 'books'
     # Common attributes to each book object
     _id = Column(Integer, primary_key=True)
     _title = Column(String)
     _author = Column(String)
+    _publisher = Column(String)
     _genre = Column(String)
+    _edition = Column(Integer)
     _publication_date = Column(String)
     _description = Column(String)
     _price = Column(Float)
     # Unique attributes to each book object
     _isbn = Column(String, unique=True)
-    _availability = Column(Boolean)
+    _quantity = Column(Integer)
     
     # Define setter methods for attributes
     def set_title(self, title):
@@ -35,12 +39,24 @@ class Book(Base):
             self._author = author
         else:
             raise ValueError("Author must be a string")
+    
+    def set_publisher(self, publisher):
+        if isinstance(publisher, str):
+            self._publisher = publisher
+        else:
+            raise ValueError("Publisher must be a string")
         
     def set_genre(self, genre):
         if isinstance(genre, str):
             self._genre = genre
         else:
             raise ValueError("Genre must be a string")
+    
+    def set_edition(self, edition):
+        if isinstance(edition, int):
+            self._edition = edition
+        else:
+            raise ValueError("Edition must be an integer")
         
     def set_publication_date(self, publication_date):
         if isinstance(publication_date, str):
@@ -67,11 +83,11 @@ class Book(Base):
         else:
             raise ValueError("ISBN must be a string")
     
-    def set_availability(self, availability):
-        if isinstance(availability, bool):
-            self._availability = availability
+    def set_quantity(self, quantity):
+        if isinstance(quantity, int):
+            self._quantity = quantity
         else:
-            raise ValueError("Availability must be a boolean")
+            raise ValueError("Quantity must be a boolean")
         
     # Define getter methods for attributes
     def get_title(self):
@@ -80,8 +96,14 @@ class Book(Base):
     def get_author(self):
         return self._author
     
+    def get_publisher(self):
+        return self._publisher
+    
     def get_genre(self):
         return self._genre
+    
+    def get_edition(self):
+        return self._edition
     
     def get_publication_date(self):
         return self._publication_date
@@ -92,7 +114,13 @@ class Book(Base):
     def get_price(self):
         return self._price
     
-    def display_metadata(self):
+    def get_isbn(self):
+        return self._isbn
+    
+    def get_quantity(self):
+        return self._quantity
+    
+    def display_metadata(books):
         """Displays book metadata
         
         Args:
@@ -103,12 +131,12 @@ class Book(Base):
             
         This instance method prints the book metadata as a string, this being, title, author, genre, publication date, and price.
         """
-        print(f"Title: {self.get_title()}")
-        print(f"Author: {self.get_author()}")
-        print(f"Genre: {self.get_genre()}")
-        print(f"Publication Date: {self.get_publication_date()}")
-        print(f"Description: {self.get_description()}")
-        print(f"Price: {self.get_price()}")
+        table = []
+        for book in books:
+            row = [book.get_title(), book.get_author(), book.get_publisher(), book.get_genre(), book.get_edition(), book.get_publication_date(), book.get_description(), book.get_price(), book.get_isbn()]
+            table.append(row)
+        
+        print(tabulate(table, headers, tablefmt="double_outline"))
         
     @classmethod
     def validate(cls, session, isbn):
@@ -134,54 +162,174 @@ class Book(Base):
         
     @classmethod
     def authenticate_title(cls, session, title):
-        """Validates book title
+        """Authenticates book title
         
         Args: 
             session (Session): The SQLAlchemy session object to perform database queries.
             title (str): The title provided for authentication.
         
         Returns:
-            book: If title exists in the database.
+            book (list): If book with specific title exists in the database.
             None: If title does not exist in the database.
             
-        This method checks if there's a book with a specific title.
+        This method checks if there's any books with a specific title in the database and filters them by uniqueness.
         
         """
-        # Query the database to find a book with the specified title
-        book = session.query(Book).filter(Book._title == title).first()
+        # Query to get all books with the given title and distinct isbn
+        books = session.query(Book).filter(Book._title == title).distinct(Book._isbn).all()
         
-        # Check if book exists in the database
-        if book:
-            return book
+        # Check if there's any book with the given title in the database
+        if books:
+            return books
         else:
             return None
     
     @classmethod
     def authenticate_author(cls, session, author):
-        """Validates book author
+        """Authenticates book author
         
         Args: 
             session (Session): The SQLAlchemy session object to perform database queries.
             author (str): The author provided for authentication.
         
         Returns:
-            book: If author exists in the database.
+            book (list): If book with specific author exists in the database.
             None: If author does not exist in the database.
             
-        This method checks if there's a book with a specific author.
+        This method checks if there's any books with a specific author in the database and filters them by uniqueness.
         
         """
-        # Query the database to find a book with the specified author
-        book = session.query(Book).filter(Book._author == author).first()
+        # Query to get all books with the given author and distinct isbn
+        books = session.query(Book).filter(Book._author == author).distinct(Book._isbn).all()
         
         # Check if book exists in the database
-        if book:
-            return book
+        if books:
+            return books
         else:
             return None
-        
+    
     @classmethod
-    def register(cls, session, title, author, genre, publication_date, description, price, isbn):
+    def authenticate_publisher(cls, session, publisher):
+        """Authenticates book publisher
+        
+        Args: 
+            session (Session): The SQLAlchemy session object to perform database queries.
+            publisher (str): The publisher provided for authentication.
+        
+        Returns:
+            book (list): If book with specific publisher exists in the database.
+            None: If publisher does not exist in the database.
+            
+        This method checks if there's any books with a specific publisher in the database and filters them by uniqueness.
+        
+        """
+        # Query to get all books with the given publisher and distinct isbn
+        books = session.query(Book).filter(Book._publisher == publisher).distinct(Book._isbn).all()
+        
+        # Check if book exists in the database
+        if books:
+            return books
+        else:
+            return None
+    
+    @classmethod
+    def authenticate_genre(cls, session, genre):
+        """Authenticates book genre
+        
+        Args: 
+            session (Session): The SQLAlchemy session object to perform database queries.
+            genre (str): The genre provided for authentication.
+        
+        Returns:
+            book (list): If book with specific genre exists in the database.
+            None: If genre does not exist in the database.
+            
+        This method checks if there's any books with a specific genre in the database and filters them by uniqueness.
+        
+        """
+        # Query to get all books with the given genre and distinct isbn
+        books = session.query(Book).filter(Book._genre == genre).distinct(Book._isbn).all()
+        
+        # Check if book exists in the database
+        if books:
+            return books
+        else:
+            return None
+    
+    @classmethod
+    def authenticate_edition(cls, session, edition):
+        """Authenticates book edition
+        
+        Args: 
+            session (Session): The SQLAlchemy session object to perform database queries.
+            edition (int): The edition provided for authentication.
+        
+        Returns:
+            book (list): If book with specific edition exists in the database.
+            None: If edition does not exist in the database.
+            
+        This method checks if there's any books with a specific edition in the database and filters them by uniqueness.
+        
+        """
+        # Query to get all books with the given edition and distinct isbn
+        books = session.query(Book).filter(Book._edition == edition).distinct(Book._isbn).all()
+        
+        # Check if book exists in the database
+        if books:
+            return books
+        else:
+            return None
+    
+    @classmethod
+    def authenticate_publication_date(cls, session, publication_date):
+        """Authenticates book publication date
+        
+        Args: 
+            session (Session): The SQLAlchemy session object to perform database queries.
+            publication_date (str): The publication date provided for authentication.
+        
+        Returns:
+            book (list): If book with specific publication date exists in the database.
+            None: If publication date does not exist in the database.
+            
+        This method checks if there's any books with a specific publication date in the database and filters them by uniqueness.
+        
+        """
+        # Query to get all books with the given publication date and distinct isbn
+        books = session.query(Book).filter(Book._publication_date == publication_date).distinct(Book._isbn).all()
+        
+        # Check if book exists in the database
+        if books:
+            return books
+        else:
+            return None
+    
+    @classmethod
+    def authenticate_price(cls, session, price):
+        """Authenticates book price
+        
+        Args: 
+            session (Session): The SQLAlchemy session object to perform database queries.
+            price (float): The price provided for authentication.
+        
+        Returns:
+            book (list): If book with specific price exists in the database.
+            None: If price does not exist in the database.
+            
+        This method checks if there's any books with a specific price in the database and filters them by uniqueness.
+        
+        """
+        # Query to get all books with the given price and distinct isbn
+        books = session.query(Book).filter(Book._price == price).distinct(Book._isbn).all()
+        
+        # Check if book exists in the database
+        if books:
+            return books
+        else:
+            return None
+    
+    @classmethod
+    def register(cls, session, title, author, publisher, genre, edition, publication_date, description, price, isbn):
         """Register a new book in the database
         
         Args:
@@ -197,6 +345,8 @@ class Book(Base):
         Returns: 
             book: If successfully registered a new book.
             None: If failed to register a new book. 
+            
+        This method created a new book object, sets its attributes and adds it to the database.
         """
         # Create a new book object
         new_book = Book()
@@ -206,12 +356,14 @@ class Book(Base):
             # Set new book attributes
             new_book.set_title(title)
             new_book.set_author(author)
+            new_book.set_publisher(publisher)
             new_book.set_genre(genre)
+            new_book.set_edition(edition)
             new_book.set_publication_date(publication_date)
             new_book.set_description(description)
             new_book.set_price(price)
             new_book.set_isbn(isbn)
-            new_book.set_availability(True)
+            new_book.set_quantity(1)
             
             # Add the new book to the database
             session.add(new_book)
@@ -219,12 +371,36 @@ class Book(Base):
             # Commit the changes to the database
             session.commit()
 
-            # Return new book object
-            return new_book
+            return True    # Successfully registered a new book
         else:
-            return None
+            return False    # Failed to register a new book
         
+    @classmethod
+    def add(cls, session, isbn):
+        """Add a new book to the database
         
+        Args:
+            session (Session): The SQLAlchemy session object to perform database queries.
+             isbn (str): the isbn provided to search for the book.
+        Returns: 
+            bool: True if successfully added a new book, false otherwise.
+            
+        This method alters the quantity of the book correspondent to the specified isbn to +1 in order to signify that the book was added to the database.
+        """
+        # Query the database to find a book with the specified isbn
+        book = session.query(Book).filter(Book._isbn == isbn).first()
+        
+        # Check if book exists in the database
+        if book:
+            # Update the quantity of the book
+            book.set_quantity(book.get_quantity() + 1)
+            
+            # Commit the changes to the database
+            session.commit()
+            
+            return True    # Sucessfully added a new book
+        else:
+            return False   # Failed to add a new book
         
         
         
