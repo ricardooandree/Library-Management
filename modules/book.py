@@ -14,16 +14,22 @@ headers = ["Title", "Author", "Publisher", "Genre", "Edition", "Publication Date
 
 # Helper function for string attributes validation
 def basic_string_attribute_validation(string, attribute):
-    if isinstance(string, str):
-        if not string[0].isalpha() or not string[-1].isalpha():
-            return f"{attribute} must not start or end with non-alphabetical characters"
-        
-        elif len(string) > 100:
-            return f"{attribute} must have a maximum of 100 characters"      
-        else:
-            return True
-    else:
-        return f"{attribute} must be an string"
+    # Basic string attribute validation
+    if not isinstance(string, str):
+        return f"{attribute} must be a string"
+    
+    if not string:
+        return f"{attribute} cannot be empty"
+    
+    if not string[0].isalpha() or not string[-1].isalpha():
+        return f"{attribute} must not start or end with non-alphabetical characters"
+    
+    if len(string) > 100:
+        return f"{attribute} must have a maximum of 100 characters"
+    
+    # Valid string
+    return True
+
         
 ###################################################################################################
 #######################################       CLASSES       #######################################
@@ -110,15 +116,26 @@ class Book(Base):
         self._edition = edition
         
     def set_publication_date(self, publication_date):
-        # Publication date attribute validation
+        # Check if publication date is string
         if not isinstance(publication_date, str):
             raise ValueError("Publication date must be a string")
-
-        try:
-            day, month, year = map(int, publication_date.split('-'))
-
-        except ValueError:
+        
+        # Ensure input is not empty
+        if not publication_date:
+            raise ValueError("Publication date cannot be empty")
+        
+        # Ensure input follows the format dd-mm-yyyy
+        if len(publication_date) != 10 or publication_date.count('-') != 2:
             raise ValueError("Publication date must be of format dd-mm-yyyy")
+
+        # Split the input after initial checks
+        day, month, year = publication_date.split('-')
+        
+        # Validate day, month, and year components
+        if not (day.isdigit() and month.isdigit() and year.isdigit()):
+            raise ValueError("Publication date components must be integers")
+        
+        day, month, year = int(day), int(month), int(year)
         
         if not 1 <= day <= 31:
             raise ValueError("Publication date day must be in between 1 and 31")
@@ -162,26 +179,20 @@ class Book(Base):
         if not isinstance(isbn, str):
             raise ValueError("ISBN must be a string")
         
-        try:
-            group1, group2, group3, group4, group5 = isbn.split('-')
+        # Ensure input is not empty
+        if not isbn:
+            raise ValueError("ISBN cannot be empty")
         
-        except ValueError:
-            raise ValueError("ISBN must be of format 123-4-56-789012-3")
+        # Ensure input follows the format xxx-x-xx-xxxxxx-x
+        parts = isbn.split('-')
+        if len(parts) != 5 or not all(part.isdigit() for part in parts):
+            raise ValueError("ISBN must be of format xxx-x-xx-xxxxxx-x")
         
-        if not group1.isdigit() or not len(group1) == 3:
-            raise ValueError("ISBN first set must be a number and have 3 digits")
-        
-        if not group2.isdigit() or not len(group2) == 1:
-            raise ValueError("ISBN second set must be a number and have 1 digit")
-        
-        if not group3.isdigit() or not len(group3) == 2:
-            raise ValueError("ISBN third set must be a number and have 2 digits")
-        
-        if not group4.isdigit() or not len(group4) == 6:
-            raise ValueError("ISBN fourth set must be a number and have 6 digits")
-        
-        if not group5.isdigit() or not len(group5) == 1:
-            raise ValueError("ISBN fifth set must be a number and have 1 digit")
+        # Validate length of each set of digits
+        lengths = [3, 1, 2, 6, 1]
+        for part, length in zip(parts, lengths):
+            if len(part) != length:
+                raise ValueError(f"ISBN set must be a number of {length} digits")
         
         # Set ISBN attribute
         self._isbn = isbn
@@ -189,7 +200,10 @@ class Book(Base):
     def set_quantity(self, quantity):
         # Quantity attribute validation
         if not isinstance(quantity, int):
-            raise ValueError("Quantity must be a boolean")
+            raise ValueError("Quantity must be an integer")
+        
+        if quantity < 0:
+            raise ValueError("Quantity must be zero or a positive integer")
         
         # Set quantity attribute
         self._quantity = quantity

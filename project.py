@@ -36,21 +36,42 @@ session = Session()
 ###################################       SEARCH BOOKS        #####################################
 ###################################################################################################
 # FIXME: REDIRECTING TO MAIN MENU
-# FIXME: BETTER USER INPUT VALIDATION
+def basic_string_attribute_validation(string, attribute):
+    # Basic string attribute validation
+    if not isinstance(string, str):
+        return f"{attribute} must be a string\n"
+    
+    if not string:
+        return f"{attribute} cannot be empty\n"
+    
+    if not string[0].isalpha() or not string[-1].isalpha():
+        return f"{attribute} must not start or end with non-alphabetical characters\n"
+    
+    if len(string) > 100:
+        return f"{attribute} must have a maximum of 100 characters\n"
+    
+    # Valid string
+    return True
+
+
 def get_title():
     """Get title input from the user"""
     
-    # Get user title
     while True:
         print("Usage example: OOP Python Fundamentals")
         
+        # Get user input
         title = input("Enter title: ")
         
-        # Ensures input is not an empty string
-        if title:
-            return title
-        else:
-            print("Invalid title\n")
+        # Call auxiliar function to validate basic string attribute features
+        validation_result = basic_string_attribute_validation(title, attribute="Title")
+        
+        if isinstance(validation_result, str):
+            print(validation_result)
+            continue
+        
+        # Return valid title
+        return title
             
             
 def get_author():
@@ -60,13 +81,18 @@ def get_author():
     while True:
         print("Usage example: Ricardo Silva")
         
+        # Get user input
         author = input("Enter author: ")
         
-        # Ensures input is not an empty string
-        if author:
-            return author
-        else:
-            print("Invalid author name\n")
+        # Call auxiliar function to validate basic string attribute features
+        validation_result = basic_string_attribute_validation(author, attribute="Author")
+        
+        if isinstance(validation_result, str):
+            print(validation_result)
+            continue
+        
+        # Return valid author
+        return author
             
             
 def get_publisher():
@@ -76,13 +102,18 @@ def get_publisher():
     while True:
         print("Usage example: HarperCollins")
         
+        # Get user input
         publisher = input("Enter publisher: ")
         
-        # Ensures input is not an empty string
-        if publisher:
-            return publisher
-        else:
-            print("Invalid publisher\n")
+        # Call auxiliar function to validate basic string attribute features
+        validation_result = basic_string_attribute_validation(publisher, attribute="Publisher")
+        
+        if isinstance(validation_result, str):
+            print(validation_result)
+            continue
+        
+        # Return valid publisher
+        return publisher
             
             
 def get_genre():
@@ -92,13 +123,15 @@ def get_genre():
     while True:
         print("Usage example: Educational")
         
+        # Get user input
         genre = input("Enter genre: ")
         
-        # Ensures input is not an empty string
-        if genre:
-            return genre
-        else:
-            print("Invalid genre\n")
+        # Call auxiliar function to validate basic string attribute features
+        validation_result = basic_string_attribute_validation(genre, attribute="Genre")
+        
+        if isinstance(validation_result, str):
+            print(validation_result)
+            continue
             
        
 def get_edition():
@@ -108,14 +141,20 @@ def get_edition():
     while True:
         print("Usage example: 1")
         
-        # Ensures input is an integer value higher than zero
+        # Validates edition attribute - must be a positive integer
         try: 
             edition = int(input("Enter edition: "))
-
-            if edition > 0:
-                return edition
+        
         except ValueError:
-            print("Invalid edition\n")
+            print("Edition must be an integer\n")
+            continue
+        
+        if edition <= 0:
+            print("Edition must be a positive integer\n")
+            continue
+        
+        # Return valid edition
+        return edition
             
 
 def get_publication_date():
@@ -125,28 +164,43 @@ def get_publication_date():
     while True:
         print("Usage example: 25-02-2024")
         
-        # Ensures input is of type dd-mm-yyyy and each element is between expected real values
-        try:
-            publication_date = input("Enter publication date: ")
+        # Get user input
+        publication_date = input("Enter publication date: ")
+        
+        # Ensure input is not empty
+        if not publication_date:
+            print("Publication date cannot be empty\n")
+            continue
             
-            day, month, year = map(int, publication_date.split('-'))
+        # Ensure input follows the format dd-mm-yyyy
+        if len(publication_date) != 10 or publication_date.count('-') != 2:
+            print("Publication date must be of format dd-mm-yyyy\n")
+            continue
+    
+        # Split the input after initial checks
+        day, month, year = publication_date.split('-')
+        
+        # Validate day, month, and year components
+        if not (day.isdigit() and month.isdigit() and year.isdigit()):
+            print("Publication date components must be integers\n")
+            continue
+        
+        day, month, year = int(day), int(month), int(year)
+
+        if not 1 <= day <= 31:
+            print("Publication date day must be in between 1 and 31\n")
+            continue
             
-            if not 1 <= day <= 31:
-                print("Invalid day\n")
-                continue
-            
-            elif not 1 <= month <= 12:
-                print("Invalid month\n")
-                continue
-                
-            elif not 1800 <= year <= 2100:
-                print("Invalid year\n")
-                continue
-                
-            return publication_date
-            
-        except ValueError:
-            print("Invalid publication date\n")
+        if not 1 <= month <= 12:
+            print("Publication date month must be in between 1 and 12\n")
+            continue
+        
+        if not 1800 <= year <= 2100:
+            print("Publication date year must be in between 1800 and 2100\n")
+            continue
+        
+        # Return valid publication date
+        return publication_date
 
 
 def get_price():
@@ -156,14 +210,19 @@ def get_price():
     while True:
         print("Usage example: 9.99")
         
-        # Ensures input if float higher than zero
+        # Validates edition attribute - must be a positive float
         try:
             price = float(input("Enter price: "))
-
-            if price > 0:
-                return price
         except ValueError:
-            print("Invalid price\n")
+            print("Edition must be of type float\n")
+            continue
+        
+        if price <= 0.0:
+            print("Edition must be a positive float number\n")
+            continue
+        
+        # Return valid price
+        return price
             
 
 def search_by_title():
