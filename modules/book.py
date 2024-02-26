@@ -154,6 +154,9 @@ class Book(Base):
         if not isinstance(description, str):
             raise ValueError("Description must be a string")
 
+        if not description:
+            raise ValueError("Description cannot be empty")
+    
         if len(description) > 500:
             raise ValueError("Description must have a maximum of 500 characters")
 
@@ -168,7 +171,7 @@ class Book(Base):
         if not isinstance(price, float):
             raise ValueError("Price must be a float")
         
-        if price <= 0:
+        if price <= 0.0:
             raise ValueError("Price must be a positive float")
         
         # Set price attribute

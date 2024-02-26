@@ -21,6 +21,7 @@ class User(Base):
     
     # TODO: Define relationships
     
+    # FIXME: Add better setter validation
     # Define setter methods for attributes
     def set_username(self, username):
         if isinstance(username, str):
