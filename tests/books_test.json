@@ -1,0 +1,6 @@
+{
+    "books": [
+        {"title": "OOP Python Fundamentals", "author": "Ricardo Silva", "publisher": "HarperCollins", "genre": "Educational", "edition": 1, "publication_date": "25-02-2024", "description": "Discover the essential principles and techniques of object-oriented programming in Python with this comprehensive guide, perfect for beginners and experienced programmers alike", "price": 9.99, "isbn": "111-2-33-444444-5"},         {"title": "OOP Python Fundamentals", "author": "Ricardo Silva", "publisher": "HarperCollins", "genre": "Educational", "edition": 1, "publication_date": "25-02-2024", "description": "Discover the essential principles and techniques of object-oriented programming in Python with this comprehensive guide, perfect for beginners and experienced programmers alike", "price": 9.99, "isbn": "111-2-33-444444-5"},
+        {"title": "Harry Potter and The Philosopher's Stone", "author": "JK Rowling", "publisher": "Scholastic Corporation", "genre": "Fantasy", "edition": 1, "publication_date": "26-06-1997", "description": "Young wizard Harry discovers a hidden world of magic at Hogwarts School, facing dark forces", "price": 24.99, "isbn": "978-0-74-753269-6"}
+    ]
+}
