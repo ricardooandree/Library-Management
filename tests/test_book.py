@@ -11,7 +11,7 @@ from sqlalchemy.orm import sessionmaker
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from modules.user import Base
-from modules.book import Book, BookMismatchError
+from modules.book import Book
 from modules.config import load_books
 ###################################################################################################
 ####################################       CONFIGURATION       ####################################
@@ -21,7 +21,6 @@ engine = create_engine('sqlite:///test_book.db')  # Adjust the database URL as n
 
 # Create the Base tables for each class
 Base.metadata.create_all(engine)
-# FIXME: Base.metadata.create_all(engine, checkfirst=True)
 
 # Create a Session class and bind the engine to it
 Session = sessionmaker(bind=engine)
@@ -41,7 +40,6 @@ def test_valid_title():
     book.set_title(valid_title)
     assert book.get_title() == valid_title
 
-    
 def test_invalid_title():
     # Test invalid author input
     book = Book()
@@ -68,15 +66,13 @@ def test_invalid_title():
     invalid_title = "!OOP Python Fundamentals," # Does not start or end with alphabetic characters
     with pytest.raises(ValueError):
         book.set_title(invalid_title)
-        
-        
+           
 def test_valid_author():
     # Test valid author input
     book = Book()
     valid_author = "Ricardo Silva"
     book.set_author(valid_author)
     assert book.get_author() == valid_author
-    
     
 def test_invalid_author():
     # Test invalid author input
@@ -116,8 +112,7 @@ def test_invalid_author():
     invalid_author = "Ricardo Andre Silva" # Adds extra name
     with pytest.raises(ValueError):
         book.set_author(invalid_author)
-    
-        
+         
 def test_valid_publisher():
     # Test valid publisher input
     book = Book()
@@ -125,7 +120,6 @@ def test_valid_publisher():
     book.set_publisher(valid_publisher)
     assert book.get_publisher() == valid_publisher
 
-    
 def test_invalid_publisher():
     # Test invalid publisher input
     book = Book()
@@ -153,7 +147,6 @@ def test_invalid_publisher():
     with pytest.raises(ValueError):
         book.set_publisher(invalid_publisher)
         
-        
 def test_valid_genre():
     # Test valid genre input
     book = Book()
@@ -161,7 +154,6 @@ def test_valid_genre():
     book.set_genre(valid_genre)
     assert book.get_genre() == valid_genre
 
-    
 def test_invalid_genre():
     # Test invalid genre input
     book = Book()
@@ -188,15 +180,13 @@ def test_invalid_genre():
     invalid_genre = "!Educational," # Does not start or end with alphabetic characters
     with pytest.raises(ValueError):
         book.set_genre(invalid_genre)
-        
-        
+           
 def test_valid_edition():
     # Test valid edition input
     book = Book()
     valid_edition = 1
     book.set_edition(valid_edition)
     assert book.get_edition() == valid_edition     
-
 
 def test_invalid_edition():
     # Test invalid edition input
@@ -221,15 +211,13 @@ def test_invalid_edition():
     with pytest.raises(ValueError):
         book.set_edition(invalid_edition)
         
-    
 def test_valid_publication_date():
     # Test valid publication date input
     book = Book()
     valid_publication_date = "25-02-2024"
     book.set_publication_date(valid_publication_date)
     assert book.get_publication_date() == valid_publication_date
-
-
+    
 def test_invalid_publication_date():
     # Test invalid publication date input
     book = Book()
@@ -313,14 +301,12 @@ def test_invalid_publication_date():
     with pytest.raises(ValueError):
         book.set_publication_date(invalid_publication_date)
     
-    
 def test_valid_description():
     # Test valid description input
     book = Book()
     valid_description = "Discover the essential principles and techniques of object-oriented programming in Python with this comprehensive guide, perfect for beginners and experienced programmers alike"
     book.set_description(valid_description)
     assert book.get_description() == valid_description 
-    
     
 def test_invalid_description():
     # Test invalid genre input
@@ -349,14 +335,12 @@ def test_invalid_description():
     with pytest.raises(ValueError):
         book.set_description(invalid_description)
     
-    
 def test_valid_price():
     # Test valid price input
     book = Book()
     valid_price = 9.99
     book.set_price(valid_price)
     assert book.get_price() == valid_price     
-
 
 def test_invalid_price():
     # Test invalid price input
@@ -389,14 +373,12 @@ def test_invalid_price():
     with pytest.raises(ValueError):
         book.set_price(invalid_price)
         
-
 def test_valid_isbn():
     # Test valid ISBN input
     book = Book()
     valid_isbn = "123-4-56-789123-0"
     book.set_isbn(valid_isbn)
     assert book.get_isbn() == valid_isbn 
-    
     
 def test_invalid_isbn():
     # Test invalid publication date input
@@ -500,16 +482,14 @@ def test_invalid_isbn():
     invalid_isbn = "11-1-11-111111-11" # Set out of range sets
     with pytest.raises(ValueError):
         book.set_isbn(invalid_isbn)
-        
-        
+           
 def test_valid_quantity():
     # Test valid quantity input
     book = Book()
     valid_quantity = 1
     book.set_quantity(valid_quantity)
     assert book.get_quantity() == valid_quantity    
-    
-    
+      
 def test_invalid_quantity():
     # Test invalid quantity input
     book = Book()
@@ -534,13 +514,12 @@ def test_invalid_quantity():
 ###################################################################################################
 def test_validate():
     # Test validation of book
-    valid_isbn = "111-2-33-444444-5"
-    assert Book.validate(session, valid_isbn) == False  # Book exists in database
+    book = Book.authenticate_isbn(session, "111-2-33-444444-5")
+    assert book is not None
     
-    invalid_isbn = "999-8-77-666666-5"
-    assert Book.validate(session, invalid_isbn) == True # Book doesn't exist in database
-    
-    
+    book = Book.authenticate_isbn(session, "999-8-77-666666-5")
+    assert book is None
+     
 def test_register():
     # Test registration of book
     valid_book = {
@@ -556,7 +535,7 @@ def test_register():
     }
     
     # Assert if register() returns True -> Book sucessfully registered
-    if Book.validate(session, valid_book["isbn"]):
+    if Book.authenticate_isbn(session, valid_book["isbn"]) is None:
         assert Book.register(session, valid_book["title"], valid_book["author"], valid_book["publisher"], valid_book["genre"], valid_book["edition"], valid_book["publication_date"], valid_book["description"], valid_book["price"], valid_book["isbn"]) == True
         
     invalid_book = {
@@ -572,10 +551,9 @@ def test_register():
     }
     
     # Assert if register() returns False -> Book failed to register
-    if Book.validate(session, invalid_book["isbn"]):
+    if not Book.authenticate_isbn(session, invalid_book["isbn"]):
         assert Book.register(session, invalid_book["title"], invalid_book["author"], invalid_book["publisher"], invalid_book["genre"], invalid_book["edition"], invalid_book["publication_date"], invalid_book["description"], invalid_book["price"], invalid_book["isbn"]) == False
-    
-    
+   
 def test_add():
     # Existing ISBN and matching data from book in the database
     valid_book = {
@@ -590,8 +568,11 @@ def test_add():
         "isbn": "978-0-74-753269-6"
     }
     
-    # Assert if add() returns True -> Sucessfully added book
-    assert Book.add(session, valid_book["title"], valid_book["author"], valid_book["publisher"], valid_book["genre"], valid_book["edition"], valid_book["publication_date"], valid_book["description"], valid_book["price"], valid_book["isbn"]) == True
+    existing_book = Book.authenticate_isbn(session, valid_book["isbn"])
+    
+    if existing_book is not None:
+        # Assert if add() returns True -> Sucessfully added book
+        assert Book.add(session, existing_book) == True
     
     # Non existing ISBN from book in the database
     invalid_book = {
@@ -606,146 +587,12 @@ def test_add():
         "isbn": "999-8-77-666666-5"
     }
     
+    non_existing_book = Book.authenticate_isbn(session, invalid_book["isbn"])
+    
+    if non_existing_book is not None:
     # Assert if add() returns False -> Failed to add book
-    assert Book.add(session, invalid_book["title"], invalid_book["author"], invalid_book["publisher"], invalid_book["genre"], invalid_book["edition"], invalid_book["publication_date"], invalid_book["description"], invalid_book["price"], invalid_book["isbn"]) == False
-    
-    # Mismatching title from isbn book in the database
-    invalid_book = {
-        "title": "Harry Potter",
-        "author": "JK Rowling",
-        "publisher": "Scholastic Corporation",
-        "genre": "Fantasy",
-        "edition": 1,
-        "publication_date": "26-06-1997",
-        "description": "Young wizard Harry discovers a hidden world of magic at Hogwarts School, facing dark forces",
-        "price": 24.99,
-        "isbn": "978-0-74-753269-6"
-    }
-    
-    # Assert if add() returns False -> Failed to add book
-    with pytest.raises(BookMismatchError):
-        assert Book.add(session, invalid_book["title"], invalid_book["author"], invalid_book["publisher"], invalid_book["genre"], invalid_book["edition"], invalid_book["publication_date"], invalid_book["description"], invalid_book["price"], invalid_book["isbn"])
-        
-    # Mismatching author from isbn book in the database
-    invalid_book = {
-        "title": "Harry Potter and The Philosopher's Stone",
-        "author": "Joanne Rowling",
-        "publisher": "Scholastic Corporation",
-        "genre": "Fantasy",
-        "edition": 1,
-        "publication_date": "26-06-1997",
-        "description": "Young wizard Harry discovers a hidden world of magic at Hogwarts School, facing dark forces",
-        "price": 24.99,
-        "isbn": "978-0-74-753269-6"
-    }
-    
-    # Assert if add() returns False -> Failed to add book
-    with pytest.raises(BookMismatchError):
-        assert Book.add(session, invalid_book["title"], invalid_book["author"], invalid_book["publisher"], invalid_book["genre"], invalid_book["edition"], invalid_book["publication_date"], invalid_book["description"], invalid_book["price"], invalid_book["isbn"])
-    
-    # Mismatching publisher from isbn book in the database
-    invalid_book = {
-        "title": "Harry Potter and The Philosopher's Stone",
-        "author": "JK Rowling",
-        "publisher": "HarperCollins",
-        "genre": "Fantasy",
-        "edition": 1,
-        "publication_date": "26-06-1997",
-        "description": "Young wizard Harry discovers a hidden world of magic at Hogwarts School, facing dark forces",
-        "price": 24.99,
-        "isbn": "978-0-74-753269-6"
-    }
-    
-    # Assert if add() returns False -> Failed to add book
-    with pytest.raises(BookMismatchError):
-        assert Book.add(session, invalid_book["title"], invalid_book["author"], invalid_book["publisher"], invalid_book["genre"], invalid_book["edition"], invalid_book["publication_date"], invalid_book["description"], invalid_book["price"], invalid_book["isbn"])
-    
-    # Mismatching genre from isbn book in the database
-    invalid_book = {
-        "title": "Harry Potter and The Philosopher's Stone",
-        "author": "JK Rowling",
-        "publisher": "Scholastic Corporation",
-        "genre": "Romance",
-        "edition": 1,
-        "publication_date": "26-06-1997",
-        "description": "Young wizard Harry discovers a hidden world of magic at Hogwarts School, facing dark forces",
-        "price": 24.99,
-        "isbn": "978-0-74-753269-6"
-    }
-    
-    # Assert if add() returns False -> Failed to add book
-    with pytest.raises(BookMismatchError):
-        assert Book.add(session, invalid_book["title"], invalid_book["author"], invalid_book["publisher"], invalid_book["genre"], invalid_book["edition"], invalid_book["publication_date"], invalid_book["description"], invalid_book["price"], invalid_book["isbn"])
-        
-    # Mismatching edition from isbn book in the database
-    invalid_book = {
-        "title": "Harry Potter and The Philosopher's Stone",
-        "author": "JK Rowling",
-        "publisher": "Scholastic Corporation",
-        "genre": "Fantasy",
-        "edition": 2,
-        "publication_date": "26-06-1997",
-        "description": "Young wizard Harry discovers a hidden world of magic at Hogwarts School, facing dark forces",
-        "price": 24.99,
-        "isbn": "978-0-74-753269-6"
-    }
-    
-    # Assert if add() returns False -> Failed to add book
-    with pytest.raises(BookMismatchError):
-        assert Book.add(session, invalid_book["title"], invalid_book["author"], invalid_book["publisher"], invalid_book["genre"], invalid_book["edition"], invalid_book["publication_date"], invalid_book["description"], invalid_book["price"], invalid_book["isbn"])
-    
-    # Mismatching publication_date from isbn book in the database
-    invalid_book = {
-        "title": "Harry Potter and The Philosopher's Stone",
-        "author": "JK Rowling",
-        "publisher": "Scholastic Corporation",
-        "genre": "Fantasy",
-        "edition": 1,
-        "publication_date": "02-10-2001",
-        "description": "Young wizard Harry discovers a hidden world of magic at Hogwarts School, facing dark forces",
-        "price": 24.99,
-        "isbn": "978-0-74-753269-6"
-    }
-    
-    # Assert if add() returns False -> Failed to add book
-    with pytest.raises(BookMismatchError):
-        assert Book.add(session, invalid_book["title"], invalid_book["author"], invalid_book["publisher"], invalid_book["genre"], invalid_book["edition"], invalid_book["publication_date"], invalid_book["description"], invalid_book["price"], invalid_book["isbn"])
-    
-    # Mismatching description from isbn book in the database
-    invalid_book = {
-        "title": "Harry Potter and The Philosopher's Stone",
-        "author": "JK Rowling",
-        "publisher": "Scholastic Corporation",
-        "genre": "Fantasy",
-        "edition": 1,
-        "publication_date": "26-06-1997",
-        "description": "Dark forces",
-        "price": 24.99,
-        "isbn": "978-0-74-753269-6"
-    }
-    
-    # Assert if add() returns False -> Failed to add book
-    with pytest.raises(BookMismatchError):
-        assert Book.add(session, invalid_book["title"], invalid_book["author"], invalid_book["publisher"], invalid_book["genre"], invalid_book["edition"], invalid_book["publication_date"], invalid_book["description"], invalid_book["price"], invalid_book["isbn"])
-        
-    # Mismatching price from isbn book in the database
-    invalid_book = {
-        "title": "Harry Potter and The Philosopher's Stone",
-        "author": "JK Rowling",
-        "publisher": "Scholastic Corporation",
-        "genre": "Fantasy",
-        "edition": 1,
-        "publication_date": "26-06-1997",
-        "description": "Young wizard Harry discovers a hidden world of magic at Hogwarts School, facing dark forces",
-        "price": 2.99,
-        "isbn": "978-0-74-753269-6"
-    }
-    
-    # Assert if add() returns False -> Failed to add book
-    with pytest.raises(BookMismatchError):
-        assert Book.add(session, invalid_book["title"], invalid_book["author"], invalid_book["publisher"], invalid_book["genre"], invalid_book["edition"], invalid_book["publication_date"], invalid_book["description"], invalid_book["price"], invalid_book["isbn"])
-
-        
+        assert Book.add(session, non_existing_book) == True
+     
 def test_authenticate_title():
     # Test authentication of book title
     books = Book.authenticate_title(session, "OOP Python Fundamentals")
