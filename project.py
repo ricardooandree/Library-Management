@@ -14,6 +14,7 @@ from modules.config import load_admin_accounts, load_books
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from datetime import datetime, timedelta
+from pyfiglet import Figlet
 ###################################################################################################
 #################################       APP CONFIGURATION        ##################################
 ###################################################################################################
@@ -22,7 +23,6 @@ engine = create_engine('sqlite:///library.db')  # Adjust the database URL as nee
 
 # Create the Base tables for each class
 Base.metadata.create_all(engine)
-# FIXME: Base.metadata.create_all(engine, checkfirst=True)
 
 # Create a Session class and bind the engine to it
 Session = sessionmaker(bind=engine)
@@ -36,9 +36,14 @@ session = Session()
 ###################################################################################################
 ###################################       SEARCH BOOKS        #####################################
 ###################################################################################################
-# FIXME: REDIRECTING TO MAIN MENU
+# FIXME: REDIRECTING TO MAIN MENU / REDIRECTS IN GENERAL
 # FIXME: MENUS NO OPTION -> NOT RAISEVALUE BUT CONTINUE + PRINT MESSAGE
-# FIXME: IMPLEMENT MENU IN AUXILIAR FUNCTION
+# FIXME: IMPLEMENT MENUS IN AUXILIAR FUNCTION
+# NOTE: FEE FOR LATE RETURN - TRANSACTION LATE RETURN? 
+# TODO: ADD BETTER VALIDATION FOR SETTERS IN USER 
+# TODO: ADD BETTER VALIDATION FOR SETTERS IN TRANSACTION 
+# TODO: ADD TESTS USER CLASS
+# TODO: ADD TESTS TRANSACTION CLASS
 def basic_string_attribute_validation(string, attribute):
     # Basic string attribute validation
     if not isinstance(string, str):
@@ -381,7 +386,7 @@ def search_book():
 ####################################       RENT BOOK        #######################################
 ###################################################################################################
 def get_isbn():
-    """Get ISBN input from the user"""
+    """Get ISBN input from the user and handles validation"""
     
     # Get user ISBN
     while True:
@@ -453,37 +458,44 @@ def rent_specific_book(user):
     
     if book is None:
         print("The library doesn't own the specified book\n")
-        # TODO: Return to main menu
         return
     
     # Check if the book is available for renting and if the user is authorized to rent it
     if book.get_quantity() == 0:
         print("The library doesn't currently have the specified book available for renting\n")
-        # TODO: Return to main menu
         return
      
     if user.get_total_fee() >= 100.0:
-        print("Failed to rent the book, the user's currently total fee amount is over $100\n")
-        # TODO: Return to main menu
+        print("Failed to rent book, the user's currently total fee amount is over $100\n")
         return
+
+    # Check if user has an active rental transaction for the specified book
+    transactions = Transaction.authenticate_user_book(session, user.get_id(), book.get_id(), type="Rental")
     
-    # Calls rent_book method from book class - updates book quantity 
-    book.rent_book(session)
+    if transactions is not None:
+        for transaction in transactions:
+            if transaction.get_status():
+                print("Failed to rent book, the library only allows 1 copy of the same book per person\n")
+                return
     
     # Get user return date input
     return_date, checkout_date = get_return_date()
     
+    # Book rent book method - update quantity
+    book.rent_book(session)
+    
     # Get renting book fee for the specified time duration
     fee = book.calculate_fee(return_date, checkout_date)
 
-    # Calls rent_book method from user class - updates user total_fee
+    # User rent book method - update total_fee
     user.rent_book(session, fee)
 
-    # Registers new transaction
-    if not Transaction.register(session, user.get_id(), book.get_id(), "rental", checkout_date, return_date, fee):
-        print("Failed to register transaction")
-        # TODO: Return to main menu
+    # Registers new rental transaction
+    if not Transaction.register(session, user.get_id(), book.get_id(), checkout_date, return_date, fee, status=True, type="Rental"):
+        print("Failed to register transaction\n")
         return
+    
+    print("Successfully registered book rental\n")
 
 
 def rent_book(user):
@@ -504,7 +516,82 @@ def rent_book(user):
                 sys.exit()
             case _:
                 raise ValueError("Invalid input")
-            
+
+###################################################################################################
+####################################       RENT BOOK        #######################################
+###################################################################################################
+def return_book(user):
+    """Return book"""
+    # Create figlet object, set font and print menu title
+    figlet = Figlet()
+    figlet.setFont(font="slant")
+    print(figlet.renderText("Return Book"))
+    
+    # Get ISBN user input
+    isbn = get_isbn()
+    
+    # Authenticates book isbn by validating the isbn and searching for it in the database
+    book = Book.authenticate_isbn(session, isbn)
+    
+    if book is None:
+        print("The library doesn't own the specified book\n")
+        return
+    
+    # Check if user has an active rental transaction for the specified book
+    transactions = Transaction.authenticate_user_book(session, user.get_id(), book.get_id(), type="Rental")
+    
+    # Check if user has any rental transactions
+    if transactions is None:
+        print("The user has not rented the specified book\n")
+        return
+    
+    # Check if the user has any active rental transaction 
+    target_transaction = None
+    for transaction in transactions:
+        if transaction.get_status():
+            target_transaction = transaction
+            break
+    
+    if target_transaction is None:
+        print("The user has not rented the specified book\n")
+        return
+    
+    # Get current date
+    current_date = datetime.now().date()
+    
+    # Get return_date from transaction
+    return_date = target_transaction.get_return_date()
+    
+    # Get fee from transaction
+    fee = target_transaction.get_fee()
+    
+    # Check if the return is early, late or on time
+    if current_date < return_date:
+        _type = "Early Return"
+    
+    elif current_date > return_date:
+        _type = "Late Return"
+        fee += 50.0
+        
+    else:
+        _type = "Return"
+    
+    # Book return book method - update quantity
+    book.return_book(session)
+    
+    # User return book method - update total_fee
+    user.return_book(session, fee)
+    
+    # Update rental transaction status
+    target_transaction.set_status(False)
+    
+    # Registers new return transaction
+    if not Transaction.register(session, user.get_id(), book.get_id(), target_transaction.get_checkout_date(), current_date, fee, status=False, type=_type):
+        print("Failed to register transaction\n")
+        return
+
+    print("Successfully registered book return\n")
+    
 ###################################################################################################
 ################################       LOGIN/REGISTRATION        ##################################
 ###################################################################################################
@@ -595,7 +682,7 @@ def log_in_user():
     # Check if user is admin or not and displays the corresponding menu
     if user.get_is_admin():   
         # Create admin main menu object
-        # TODO: Add book, remove book
+        # NOTE: Add book, remove book
         main_menu = Menu("Admin Menu", ["List rented books", "List available books", "Show balance", "Exit"])
         
         # Display admin menu and get user input
@@ -627,7 +714,7 @@ def log_in_user():
                 case "2":
                     rent_book(user)
                 case "3":
-                    ...     #return_book()
+                    return_book(user)
                 case "4":
                     ...     #user_information()
                 case "5":

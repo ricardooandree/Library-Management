@@ -173,7 +173,17 @@ class User(Base):
         
         return True # Sucessfully rented a book
         
-    @classmethod
-    def return_book(cls):
-        """Return a book"""
-        ...
+    def return_book(self, session, fee):
+        """Return a book
+        """
+        # Get user total fee
+        total_fee = self.get_total_fee()
+        
+        # Sets the total fee amount
+        self.set_total_fee(total_fee - fee)
+        
+        # Commit changes to the database
+        session.commit()
+        
+        return True # Sucessfully returned a book
+    

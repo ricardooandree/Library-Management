@@ -549,11 +549,20 @@ class Book(Base):
         session.commit()
         
         return True  # Successfully rented a book
-
     
-    @classmethod
-    def return_book(cls):
-        ...
+    def return_book(self, session):
+        """Returns a book
+        """
+        # Gets book quantity from the database
+        quantity = self.get_quantity()
+        
+        # Set the quantity of the book
+        self.set_quantity(quantity + 1)
+        
+        # Commit the changes to the database
+        session.commit()
+        
+        return True  # Successfully rented a book
     
     def calculate_fee(self, return_date, checkout_date):
         """Calculates the renting fee

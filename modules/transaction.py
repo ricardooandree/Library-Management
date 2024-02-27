@@ -1,7 +1,7 @@
 ###################################################################################################
 #######################################       IMPORTS       #######################################
 ###################################################################################################
-from sqlalchemy import Column, Float, Integer, String, ForeignKey, Date
+from sqlalchemy import Column, Float, Integer, String, Date, Boolean, ForeignKey
 from sqlalchemy.orm import relationship
 from modules.user import Base
 
@@ -18,6 +18,7 @@ class Transaction(Base):
     _checkout_date = Column(Date)
     _return_date = Column(Date)
     _fee = Column(Float)
+    _status = Column(Boolean)
     
     # Define relationships
     user = relationship("User", back_populates="transactions")
@@ -42,6 +43,9 @@ class Transaction(Base):
         
     def set_fee(self, fee):
         self._fee = fee
+    
+    def set_status(self, active):
+        self._status = active
         
     # Define getter methods for attributes
     def get_type(self):
@@ -56,11 +60,27 @@ class Transaction(Base):
     def get_fee(self):
         return self._fee
     
+    def get_status(self):
+        return self._status
+    
     def display(self):
         ...
 
     @classmethod
-    def register(cls, session, user_id, book_id, type, checkout_date, return_date, fee):
+    def authenticate_user_book(cls, session, user_id, book_id, type=None):
+        """Authenticates a specific user rental transactions
+        """
+        # Query the database to find a transaction with the specified book and user
+        transactions = session.query(Transaction).filter(Transaction._user_id == user_id, Transaction._book_id == book_id, Transaction._type == type).all()
+
+        # Check if transaction exists in the database
+        if transactions: 
+            return transactions
+        else:
+            return None
+    
+    @classmethod
+    def register(cls, session, user_id, book_id, checkout_date, return_date, fee, status, type):
         """Register new transaction
         """
         # Create a new Transaction object
@@ -75,6 +95,7 @@ class Transaction(Base):
             new_transaction.set_checkout_date(checkout_date)
             new_transaction.set_return_date(return_date)
             new_transaction.set_fee(fee)
+            new_transaction.set_status(status)
             
             # Add new transaction to the database
             session.add(new_transaction)
@@ -83,3 +104,5 @@ class Transaction(Base):
             return True    # Registration successful
         else:
             return False    # Registration failed
+        
+        
