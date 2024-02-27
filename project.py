@@ -13,6 +13,7 @@ from modules.transaction import Transaction
 from modules.config import load_admin_accounts, load_books
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+from datetime import datetime, timedelta
 ###################################################################################################
 #################################       APP CONFIGURATION        ##################################
 ###################################################################################################
@@ -36,6 +37,8 @@ session = Session()
 ###################################       SEARCH BOOKS        #####################################
 ###################################################################################################
 # FIXME: REDIRECTING TO MAIN MENU
+# FIXME: MENUS NO OPTION -> NOT RAISEVALUE BUT CONTINUE + PRINT MESSAGE
+# FIXME: IMPLEMENT MENU IN AUXILIAR FUNCTION
 def basic_string_attribute_validation(string, attribute):
     # Basic string attribute validation
     if not isinstance(string, str):
@@ -225,6 +228,18 @@ def get_price():
         return price
             
 
+def show_all_books():
+    """Displays all books in the database"""
+    
+    # Get all books from the database
+    books = Book.get_all(session)
+    if books:
+        Book.display_metadata(books)
+    else:
+        print("The library doesn't own any books\n")
+        # TODO: Redirects to main menu
+
+
 def search_by_title():
     """Searches book by title, gets user input and handles validation cases"""
     
@@ -334,7 +349,7 @@ def search_book():
     """Search book"""
     
     # Create search book menu object
-    search_book_menu = Menu("Search Book", ["Search by title", "Search by author", "Search by publisher", "Search by genre", "Search by edition", "Search by publication date", "Search by price", "Exit"])
+    search_book_menu = Menu("Search Book", ["Show all books", "Search by title", "Search by author", "Search by publisher", "Search by genre", "Search by edition", "Search by publication date", "Search by price", "Exit"])
     
     # Display search book menu and get user input
     while True:
@@ -342,20 +357,150 @@ def search_book():
         
         match choice:
             case "1":
-                search_by_title()
+                show_all_books()
             case "2":
-                search_by_author()
+                search_by_title()
             case "3":
-                search_by_publisher()
+                search_by_author()
             case "4":
-                search_by_genre()
+                search_by_publisher()
             case "5":
-                search_by_edition()
+                search_by_genre()
             case "6":
-                search_by_publication_date()
+                search_by_edition()
             case "7":
-                search_by_price()
+                search_by_publication_date()
             case "8":
+                search_by_price()
+            case "9":
+                sys.exit()
+            case _:
+                raise ValueError("Invalid input")
+            
+###################################################################################################
+####################################       RENT BOOK        #######################################
+###################################################################################################
+def get_isbn():
+    """Get ISBN input from the user"""
+    
+    # Get user ISBN
+    while True:
+        print("Usage example: 111-2-33-444444-5")
+        
+        isbn = input("Enter ISBN: ").strip()
+        
+        # Ensure input is not empty
+        if not isbn:
+            print("Publication date cannot be empty\n")
+            continue
+        
+        # Ensure input follows the format xxx-x-xx-xxxxxx-x
+        parts = isbn.split('-')
+        if len(parts) != 5 or not all(part.isdigit() for part in parts):
+            print("ISBN must be of format xxx-x-xx-xxxxxx-x")
+            continue
+        
+        # Validate length of each set of digits
+        lengths = [3, 1, 2, 6, 1]
+        for part, length in zip(parts, lengths):
+            if len(part) != length:
+                print(f"ISBN set must be a number of {length} digits")
+                continue
+            
+        # Return valid ISBN
+        return isbn
+            
+
+def get_return_date():
+    """Get return date input from the user"""
+    
+    # Get user return date
+    while True:
+        print("\nUsage example: 27-02-2024")
+        
+        # Validates return date attribute - must be a valid date
+        try:
+            return_date = datetime.strptime(input("Enter return date: "), "%d-%m-%Y").date()
+        except ValueError:
+            print("Return date must be of type date\n")
+            continue
+        
+        # Get current date
+        current_date = datetime.now().date()
+        
+        # Check if return date is in the past 
+        if return_date <= current_date:
+            print("Return date must be a valid date in the future\n")
+            continue
+        
+        # Check if return date is more than 30 days from the current date
+        if return_date > current_date + timedelta(days=30):
+            print("Return date must be within 30 days from today\n")
+            continue
+        
+        # Return valid return date
+        return return_date, current_date
+    
+    
+def rent_specific_book(user):
+    """Rent specific book"""
+    
+    # Get user ISBN input
+    isbn = get_isbn()
+    
+    # Authenticates book isbn by validating the isbn and searching for it in the database
+    book = Book.authenticate_isbn(session, isbn)
+    
+    if book is None:
+        print("The library doesn't own the specified book\n")
+        # TODO: Return to main menu
+        return
+    
+    # Check if the book is available for renting and if the user is authorized to rent it
+    if book.get_quantity() == 0:
+        print("The library doesn't currently have the specified book available for renting\n")
+        # TODO: Return to main menu
+        return
+     
+    if user.get_total_fee() >= 100.0:
+        print("Failed to rent the book, the user's currently total fee amount is over $100\n")
+        # TODO: Return to main menu
+        return
+    
+    # Calls rent_book method from book class - updates book quantity 
+    book.rent_book(session)
+    
+    # Get user return date input
+    return_date, checkout_date = get_return_date()
+    
+    # Get renting book fee for the specified time duration
+    fee = book.calculate_fee(return_date, checkout_date)
+
+    # Calls rent_book method from user class - updates user total_fee
+    user.rent_book(session, fee)
+
+    # Registers new transaction
+    if not Transaction.register(session, user.get_id(), book.get_id(), "rental", checkout_date, return_date, fee):
+        print("Failed to register transaction")
+        # TODO: Return to main menu
+        return
+
+
+def rent_book(user):
+    """Rent book"""
+    # Create rent book menu object
+    rent_book_menu = Menu("Rent Book", ["Show all books", "Rent book", "Exit"])
+    
+    # Display rent book menu and get user input
+    while True:
+        choice = rent_book_menu.display()
+        
+        match choice:
+            case "1":
+                show_all_books()
+            case "2":
+                rent_specific_book(user)
+            case "3":
                 sys.exit()
             case _:
                 raise ValueError("Invalid input")
@@ -412,7 +557,6 @@ def register_form():
         # Register user
         return User.register(session, username, password)
     else:
-        # NOTE: Current implementation: wrong credentials -> redirects to initial menu
         print("User already exists or password doesn't match password confirmation\n")
         init_menu()
     
@@ -442,7 +586,6 @@ def log_in_form():
         init_menu()
           
     
-# FIXME: Implement user menu and admin menu on an auxiliar function
 def log_in_user():
     """Logs in as a user"""
 
@@ -482,7 +625,7 @@ def log_in_user():
                 case "1":
                     search_book()
                 case "2":
-                    ...     #rent_book()
+                    rent_book(user)
                 case "3":
                     ...     #return_book()
                 case "4":
@@ -524,7 +667,7 @@ def main():
     load_admin_accounts(session, "admin_accounts.json")
     
     # Load books into the database
-    load_books(session, "books_test.json")
+    load_books(session, "books.json")
     
     # Calls init menu to be displayed
     init_menu()

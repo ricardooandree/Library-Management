@@ -1,7 +1,7 @@
 ###################################################################################################
 #######################################       IMPORTS       #######################################
 ###################################################################################################
-from sqlalchemy import Column, Integer, String, Boolean, ForeignKey
+from sqlalchemy import Column, Integer, String, Boolean, Float
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from werkzeug.security import check_password_hash, generate_password_hash
@@ -18,8 +18,10 @@ class User(Base):
     _username = Column(String, unique=True)
     _password = Column(String)
     _is_admin = Column(Boolean, default=False)
+    _total_fee = Column(Float, default=0.0)
     
-    # TODO: Define relationships
+    # Define relationship with transactions
+    transactions = relationship("Transaction", back_populates="user")
     
     # FIXME: Add better setter validation
     # Define setter methods for attributes
@@ -41,7 +43,16 @@ class User(Base):
         else:
             raise ValueError("is_admin must be a boolean")
     
+    def set_total_fee(self, fee):
+        if isinstance(fee, float):
+            self._total_fee = fee
+        else:
+            raise ValueError("Total fee must be a float")
+        
     # Define getter methods for attributes
+    def get_id(self):
+        return self._id
+    
     def get_username(self):
         return self._username
     
@@ -50,6 +61,9 @@ class User(Base):
     
     def get_is_admin(self):
         return self._is_admin
+    
+    def get_total_fee(self):
+        return self._total_fee
     
     @classmethod
     def validate(cls, session, username, password, confirm_password):
@@ -143,13 +157,23 @@ class User(Base):
             # Return the newly created user object
             return new_user  
         else:
-            return None    # Registration failed
+            return False    # Registration failed
 
-
-
-
-    def get_books_rented(self):
-        pass
-    
-    def pay_fine(self):
-        pass
+    def rent_book(self, session, fee):
+        """Rents a book
+        """
+        # Get user total fee
+        total_fee = self.get_total_fee()
+        
+        # Sets the total fee amount
+        self.set_total_fee(total_fee + fee)
+        
+        # Commit changes to the database
+        session.commit()
+        
+        return True # Sucessfully rented a book
+        
+    @classmethod
+    def return_book(cls):
+        """Return a book"""
+        ...

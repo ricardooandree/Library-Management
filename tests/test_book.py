@@ -655,3 +655,11 @@ def test_authenticate_price():
     
     books = Book.authenticate_price(session, 1.99)
     assert books is None
+    
+# TODO: 
+# def test_authenticate_isbn():
+# def test_display_metadata():
+# def test_get_all():
+# def test_rent_book():
+# def test_return_book():
+# def test_calculate_fine():

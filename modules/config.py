@@ -4,7 +4,6 @@
 import json
 from modules.user import User
 from modules.book import Book
-
 ###################################################################################################
 #####################################       FUNCTIONS        ######################################
 ###################################################################################################
@@ -36,10 +35,11 @@ def load_books(session, file_path):
     books = data.get("books", [])
     
     for book in books:
-        # Validates if the book doesn't exist
-        if Book.validate(session, book['isbn']):
+        # Validates if the book exists
+        existing_book = Book.authenticate_isbn(session, book['isbn'])
+        if existing_book is None:
             # Register book
             Book.register(session, book['title'], book['author'], book['publisher'], book['genre'], book['edition'], book['publication_date'], book['description'], book['price'], book['isbn'])
         else:
             # Adds copy of the book
-            Book.add(session, book['title'], book['author'], book['publisher'], book['genre'], book['edition'], book['publication_date'], book['description'], book['price'], book['isbn'])
+            Book.add(session, existing_book)

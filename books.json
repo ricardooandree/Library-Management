@@ -1,10 +1,6 @@
 {
     "books": [
-        {"title": "book1", "author": "author1", "publisher": "pub1", "genre": "genre1", "edition": 1,"publication_date": "23-02-2024", "description": "description1", "price": 9.99, "isbn": "123-4-56-789123-0"},
-        {"title": "book2", "author": "author2", "publisher": "pub2", "genre": "genre2", "edition": 1, "publication_date": "24-02-2024", "description": "description2", "price": 10.00, "isbn": "987-6-54-321987-0"},
-        {"title": "book3", "author": "author3", "publisher": "pub3", "genre": "genre3", "edition": 1, "publication_date": "25-02-2024", "description": "description3", "price": 4.99, "isbn": "654-3-16-148410-0"},
-        {"title": "book1", "author": "author2", "publisher": "pub2", "genre": "genre3", "edition": 1, "publication_date": "25-02-2024", "description": "description3", "price": 2.00, "isbn": "654-3-16-543555-0"},
-        {"title": "book1", "author": "author2", "publisher": "pub2", "genre": "genre3", "edition": 1, "publication_date": "25-02-2024", "description": "description3", "price": 1.50, "isbn": "654-3-16-111111-0"},
-        {"title": "book1", "author": "author2", "publisher": "pub2", "genre": "genre3", "edition": 1, "publication_date": "25-02-2024", "description": "description3", "price": 1.50, "isbn": "654-3-16-111111-0"}
+        {"title": "OOP Python Fundamentals", "author": "Ricardo Silva", "publisher": "HarperCollins", "genre": "Educational", "edition": 1, "publication_date": "25-02-2024", "description": "Discover", "price": 9.99, "isbn": "111-2-33-444444-5"},         {"title": "OOP Python Fundamentals", "author": "Ricardo Silva", "publisher": "HarperCollins", "genre": "Educational", "edition": 1, "publication_date": "25-02-2024", "description": "Discover", "price": 9.99, "isbn": "111-2-33-444444-5"},
+        {"title": "Harry Potter and The Philosopher's Stone", "author": "JK Rowling", "publisher": "Scholastic Corporation", "genre": "Fantasy", "edition": 1, "publication_date": "26-06-1997", "description": "Young wizard", "price": 24.99, "isbn": "978-0-74-753269-6"}
     ]
 }
