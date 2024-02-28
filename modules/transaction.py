@@ -13,8 +13,8 @@ from modules.user import Base
 class Transaction(Base):
     __tablename__ = 'transactions'
     _id = Column(Integer, primary_key=True)
-    _user_id = Column(Integer, ForeignKey('users._id'), unique=True)
-    _book_id = Column(Integer, ForeignKey('books._id'), unique=True)
+    _user_id = Column(Integer, ForeignKey('users._id'))
+    _book_id = Column(Integer, ForeignKey('books._id'))
     _type = Column(String)  # Type of transaction: Rental/Return
     _checkout_date = Column(Date)
     _return_date = Column(Date)

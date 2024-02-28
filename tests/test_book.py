@@ -6,12 +6,14 @@ import os
 import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+from datetime import datetime
 
 # Add the parent directory (Library-Management) to the Python path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from modules.user import Base
 from modules.book import Book
+from modules.transaction import Transaction
 from modules.config import load_books
 ###################################################################################################
 ####################################       CONFIGURATION       ####################################
@@ -30,6 +32,9 @@ session = Session()
 
 # Load books into the test database
 load_books(session, "books_test.json")
+
+# Headers for table printing
+headers = ["Title", "Author", "Publisher", "Genre", "Edition", "Publication Date", "Description", "Price", "ISBN"]
 ###################################################################################################
 ################################       SETTER/GETTER TESTS       ##################################
 ###################################################################################################
@@ -657,9 +662,44 @@ def test_authenticate_price():
     assert books is None
     
 # TODO: 
-# def test_authenticate_isbn():
-# def test_display_metadata():
-# def test_get_all():
-# def test_rent_book():
-# def test_return_book():
-# def test_calculate_fine():
+def test_authenticate_isbn():
+    # Test authentication of book isbn
+    book = Book.authenticate_isbn(session, "111-2-33-444444-5")
+    assert book is not None
+    
+    book = Book.authenticate_isbn(session, "111-1-11-111111-1")
+    assert book is None
+    
+def test_get_all():
+    # Test getting all books
+    books = Book.get_all(session)
+    assert books is not None
+    assert len(books) == 3
+
+def test_rent_book():
+    # Test renting a book
+    book = Book.authenticate_isbn(session, "111-2-33-444444-5")
+    if book is not None:
+        if book.get_quantity() != 0:
+            assert book.rent_book(session) == True
+
+def test_return_book():
+    # Test returning a book
+    book = Book.authenticate_isbn(session, "111-2-33-444444-5")
+    if book is not None:
+        assert book.rent_book(session) == True
+    
+def test_calculate_fee():
+    # Test calculating a book fee
+    book = Book.authenticate_isbn(session, "111-2-33-444444-5")
+    if book is not None:
+        # Example strings representing dates
+        current_date_str = "28-02-2024"
+        return_date_str = "03-03-2024"
+
+        # Parse strings into datetime objects
+        current_date = datetime.strptime(current_date_str, "%d-%m-%Y").date()
+        return_date = datetime.strptime(return_date_str, "%d-%m-%Y").date()
+        
+        assert book.calculate_fee(return_date, current_date) == 1.9980000000000002
+        

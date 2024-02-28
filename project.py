@@ -30,22 +30,14 @@ Session = sessionmaker(bind=engine)
 
 # Create session object
 session = Session()
+
+# Create figlet object, set font and print menu title
+figlet = Figlet()
+figlet.setFont(font="slant")
+
 ###################################################################################################
 #####################################       FUNCTIONS        ######################################
 ###################################################################################################
-
-###################################################################################################
-###################################       SEARCH BOOKS        #####################################
-###################################################################################################
-# NOTE: 28/02/2024: MENU REFACTORING + REDIRECTING + UNIT TESTING  
-# FIXME: REDIRECTING TO MAIN MENU / REDIRECTS IN GENERAL
-# FIXME: MENUS NO OPTION -> NOT RAISEVALUE BUT CONTINUE + PRINT MESSAGE
-# FIXME: IMPLEMENT MENUS IN AUXILIAR FUNCTION
-# NOTE: FEE FOR LATE RETURN - TRANSACTION LATE RETURN? 
-# TODO: ADD TESTS USER CLASS
-# TODO: ADD TESTS TRANSACTION CLASS
-# TODO: ADD PASSWORD SAFETY REQUIREMENTS CHECK
-# TODO: ADD SETTER USER_ID + BOOK_ID VALIDATION IF IT EXISTS???
 def basic_string_attribute_validation(string, attribute):
     # Basic string attribute validation
     if not isinstance(string, str):
@@ -63,6 +55,14 @@ def basic_string_attribute_validation(string, attribute):
     # Valid string
     return True
 
+###################################################################################################
+###################################       SEARCH BOOKS        #####################################
+###################################################################################################
+# NOTE: 28/02/2024: UNIT TESTING + START THINKING ABOUT ADMIN IMPLEMENTATION
+# TODO: ADD TESTS USER CLASS
+# TODO: ADD TESTS TRANSACTION CLASS
+# TODO: ADD PASSWORD SAFETY REQUIREMENTS CHECK
+# TODO: ADD SETTER USER_ID + BOOK_ID VALIDATION IF IT EXISTS???
 
 def get_title():
     """Get title input from the user"""
@@ -244,7 +244,6 @@ def show_all_books():
         Book.display_metadata(books)
     else:
         print("The library doesn't own any books\n")
-        # TODO: Redirects to main menu
 
 
 def search_by_title():
@@ -259,7 +258,6 @@ def search_by_title():
         Book.display_metadata(books)
     else:
         print("The library doesn't own any book with that title\n")
-        # TODO: Redirects to main menu
         
         
 def search_by_author():
@@ -274,7 +272,6 @@ def search_by_author():
         Book.display_metadata(books)
     else:
         print("The library doesn't own any books of that author\n")
-        # TODO: Redirects to main menu
         
 
 def search_by_publisher():
@@ -289,7 +286,6 @@ def search_by_publisher():
         Book.display_metadata(books)
     else:
         print("The library doesn't own any books of that publisher\n")
-        # TODO: Redirects to main menu
         
         
 def search_by_genre():
@@ -304,7 +300,6 @@ def search_by_genre():
         Book.display_metadata(books)
     else:
         print("The library doesn't own any books of that genre\n")
-        # TODO: Redirects to main menu
     
 
 def search_by_edition():
@@ -319,7 +314,6 @@ def search_by_edition():
         Book.display_metadata(books)
     else:
         print("The library doesn't own any books of that edition\n")
-        # TODO: Redirects to main menu
         
 
 def search_by_publication_date():
@@ -334,7 +328,6 @@ def search_by_publication_date():
         Book.display_metadata(books)
     else:
         print("The library doesn't own any books of that publication date\n")
-        # TODO: Redirects to main menu
         
 
 def search_by_price():
@@ -349,7 +342,6 @@ def search_by_price():
         Book.display_metadata(books)
     else:
         print("The library doesn't own any books of that price\n")
-        # TODO: Redirects to main menu
         
         
 def search_book():
@@ -380,9 +372,9 @@ def search_book():
             case "8":
                 search_by_price()
             case "9":
-                sys.exit()
+                return
             case _:
-                raise ValueError("Invalid input")
+                print("Invalid input\n")
             
 ###################################################################################################
 ####################################       RENT BOOK        #######################################
@@ -398,22 +390,26 @@ def get_isbn():
         
         # Ensure input is not empty
         if not isbn:
-            print("Publication date cannot be empty\n")
+            print("ISBN cannot be empty\n")
             continue
         
         # Ensure input follows the format xxx-x-xx-xxxxxx-x
         parts = isbn.split('-')
         if len(parts) != 5 or not all(part.isdigit() for part in parts):
-            print("ISBN must be of format xxx-x-xx-xxxxxx-x")
+            print("ISBN must be of format xxx-x-xx-xxxxxx-x\n")
             continue
         
         # Validate length of each set of digits
         lengths = [3, 1, 2, 6, 1]
+        valid = True
         for part, length in zip(parts, lengths):
             if len(part) != length:
-                print(f"ISBN set must be a number of {length} digits")
-                continue
-            
+                print(f"ISBN set must be a number of {length} digits\n")
+                valid = False
+        
+        if not valid:
+            continue
+        
         # Return valid ISBN
         return isbn
             
@@ -449,8 +445,11 @@ def get_return_date():
         return return_date, current_date
     
     
-def rent_specific_book(user):
-    """Rent specific book"""
+def rent_book(user):
+    """Rent book"""
+    
+    # Print rent title
+    print(figlet.renderText("Rent Book"))
     
     # Get user ISBN input
     isbn = get_isbn()
@@ -499,34 +498,13 @@ def rent_specific_book(user):
     
     print("Successfully registered book rental\n")
 
-
-def rent_book(user):
-    """Rent book"""
-    # Create rent book menu object
-    rent_book_menu = Menu("Rent Book", ["Show all books", "Rent book", "Exit"])
-    
-    # Display rent book menu and get user input
-    while True:
-        choice = rent_book_menu.display()
-        
-        match choice:
-            case "1":
-                show_all_books()
-            case "2":
-                rent_specific_book(user)
-            case "3":
-                sys.exit()
-            case _:
-                raise ValueError("Invalid input")
-
 ###################################################################################################
 ####################################       RENT BOOK        #######################################
 ###################################################################################################
 def return_book(user):
     """Return book"""
-    # Create figlet object, set font and print menu title
-    figlet = Figlet()
-    figlet.setFont(font="slant")
+    
+    # Print return title
     print(figlet.renderText("Return Book"))
     
     # Get ISBN user input
@@ -695,13 +673,17 @@ def register_form():
         init_menu()
     
 
-def register_user():
+def register():
     """Register user"""
     
     # Calls user registration form and handles the registration validation
     user = register_form()
 
-    # TODO: Calls main menu
+    # Check if user is admin or not and displays the corresponding menu
+    if user.get_is_admin():
+        admin_menu(user)
+    else:
+        user_menu(user)
     
 
 def log_in_form():
@@ -719,55 +701,70 @@ def log_in_form():
         print("Wrong credentials\n")
         init_menu()
           
+
+def admin_menu(user):
+    """Displays admin menu"""
+    # NOTE: Listing options: rented books, available books, etc.
+    # NOTE: Searching options: search user with rented books, etc.
+    # Create admin main menu object
+    admin_menu = Menu("Admin Menu", ["Listing", "Search", "Add book", "Remove Book", "Show balance", "Exit"])
     
-def log_in_user():
-    """Logs in as a user"""
+    # Display admin menu and get user input
+    while True:
+        choice = admin_menu.display()
+        
+        match choice:
+            case "1":
+                ...     #admin_listing_menu()
+            case "2":
+                ...     #admin_searching_menu()
+            case "3":
+                ...     #add_book()
+            case "4":
+                ...     #remove_book()
+            case "5":
+                ...     #show_balance()
+            case "6":
+                sys.exit()
+            case _:
+                print("Invalid input\n") 
+
+
+def user_menu(user):
+    """Displays user menu"""
+    # Create user main menu object
+    user_menu = Menu("User Menu", ["Search book", "Rent book", "Return book", "User information", "Exit"])
+    
+    # Display main menu and get user input
+    while True:
+        choice = user_menu.display()
+        
+        match choice:
+            case "1":
+                search_book()
+            case "2":
+                rent_book(user)
+            case "3":
+                return_book(user)
+            case "4":
+                ...     #user_information()
+            case "5":
+                sys.exit()
+            case _:
+                print("Invalid input\n")
+
+
+def log_in():
+    """Logs in"""
 
     # Calls user login form and handles the login authentication
     user = log_in_form()
 
     # Check if user is admin or not and displays the corresponding menu
     if user.get_is_admin():   
-        # Create admin main menu object
-        # NOTE: Add book, remove book
-        main_menu = Menu("Admin Menu", ["List rented books", "List available books", "Show balance", "Exit"])
-        
-        # Display admin menu and get user input
-        while True:
-            choice = main_menu.display()
-            
-            match choice:
-                case "1":
-                    ...     #list_rented_books()
-                case "2":
-                    ...     #list_available_books()
-                case "3":
-                    ...     #show_balance()
-                case "4":
-                    sys.exit()
-                case _:
-                    raise ValueError("Invalid input") 
+        admin_menu(user)
     else:  
-        # Create user main menu object
-        main_menu = Menu("User Menu", ["Search book", "Rent book", "Return book", "User information", "Exit"])
-        
-        # Display main menu and get user input
-        while True:
-            choice = main_menu.display()
-            
-            match choice:
-                case "1":
-                    search_book()
-                case "2":
-                    rent_book(user)
-                case "3":
-                    return_book(user)
-                case "4":
-                    ...     #user_information()
-                case "5":
-                    sys.exit()
-                case _:
-                    print("Invalid input")
+        user_menu(user)
         
 
 ###################################################################################################
@@ -785,13 +782,13 @@ def init_menu():
         
         match choice:
             case "1":
-                log_in_user()
+                log_in()
             case "2":
-                register_user()
+                register()
             case "3":
                 sys.exit()
             case _:
-                print("Invalid input")
+                print("Invalid input\n")
           
                 
 def main():

@@ -10,6 +10,7 @@ from tabulate import tabulate
 ###################################################################################################
 #######################################       HELPERS       #######################################
 ###################################################################################################
+# Headers for table printing
 headers = ["Title", "Author", "Publisher", "Genre", "Edition", "Publication Date", "Description", "Price", "ISBN"]
 
 # Helper function for string attributes validation
