@@ -4,6 +4,7 @@
 import os
 import sys
 import random 
+import re
 
 from modules.user import Base
 from modules.menu import Menu
@@ -36,14 +37,15 @@ session = Session()
 ###################################################################################################
 ###################################       SEARCH BOOKS        #####################################
 ###################################################################################################
+# NOTE: 28/02/2024: MENU REFACTORING + REDIRECTING + UNIT TESTING  
 # FIXME: REDIRECTING TO MAIN MENU / REDIRECTS IN GENERAL
 # FIXME: MENUS NO OPTION -> NOT RAISEVALUE BUT CONTINUE + PRINT MESSAGE
 # FIXME: IMPLEMENT MENUS IN AUXILIAR FUNCTION
 # NOTE: FEE FOR LATE RETURN - TRANSACTION LATE RETURN? 
-# TODO: ADD BETTER VALIDATION FOR SETTERS IN USER 
-# TODO: ADD BETTER VALIDATION FOR SETTERS IN TRANSACTION 
 # TODO: ADD TESTS USER CLASS
 # TODO: ADD TESTS TRANSACTION CLASS
+# TODO: ADD PASSWORD SAFETY REQUIREMENTS CHECK
+# TODO: ADD SETTER USER_ID + BOOK_ID VALIDATION IF IT EXISTS???
 def basic_string_attribute_validation(string, attribute):
     # Basic string attribute validation
     if not isinstance(string, str):
@@ -598,37 +600,82 @@ def return_book(user):
 def get_username():
     """Get username input from the user"""
     
-    # Get user username
     while True:
-        username = input("Enter username: ").strip()
-        if username:
-            return username
-        else:
-            print("Please enter username\n")
+        # Get username input
+        username = input("Enter username: ")
+        
+        # Check if username is empty
+        if not username:
+            print("Username cannot be empty\n")
+            continue
+        
+        # Check if username is more than 50 characters long
+        if len(username) > 50:
+            print("Username must be less than 50 characters long\n")
+            continue
+        
+        # Regular expression pattern allowing alphanumeric characters and specified special characters
+        pattern = r'^[a-zA-Z0-9_-]+$'
+        
+        # Match the input string against the pattern
+        if not re.match(pattern, username):
+            print("Username, can't contain spaces or special characters that are not - or _")
+            continue
+
+        # Return valid username
+        return username
             
             
 def get_password():
     """Get password input from the user"""
     
-    # Get user password
     while True:
-        password = input("Enter password: ").strip()
-        if password:
-            return password
-        else:
-            print("Please enter password\n")
+        # Get user password
+        password = input("Enter password: ")
+        
+        # Check if password is empty
+        if not password:
+            print("Password cannot be empty\n")
+            continue
+        
+        # Check if password is more than 50 characters long
+        if len(password) > 50:
+            print("Password must be less than 50 characters long\n")
+            continue
+        
+        # Check if password contains spaces
+        if ' ' in password:
+            print("Password cannot contain spaces\n")
+            continue
+        
+        # Return valid password
+        return password
             
 
 def get_password_confirm():
     """Get password confirmation input from the user"""
     
-    # Get user password confirmation
     while True:
-        password_confirm = input("Enter password confirmation: ").strip()
-        if password_confirm:
-            return password_confirm
-        else:
-            print("Please enter password confirmation\n")
+        # Get user password
+        password_confirm = input("Enter password confirmation: ")
+        
+        # Check if password confirmation is empty
+        if not password_confirm:
+            print("Password cannot be empty\n")
+            continue
+        
+        # Check if password confirmation is more than 50 characters long
+        if len(password_confirm) > 50:
+            print("Password must be less than 50 characters long\n")
+            continue
+        
+        # Check if password confirmation contains spaces
+        if ' ' in password_confirm:
+            print("Password cannot contain spaces\n")
+            continue
+        
+        # Return valid password confirmation
+        return password_confirm
             
 
 def register_form():

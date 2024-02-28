@@ -1,10 +1,11 @@
 ###################################################################################################
 #######################################       IMPORTS       #######################################
 ###################################################################################################
+import datetime
+
 from sqlalchemy import Column, Float, Integer, String, Date, Boolean, ForeignKey
 from sqlalchemy.orm import relationship
 from modules.user import Base
-
 
 ###################################################################################################
 #######################################       CLASSES       #######################################
@@ -12,39 +13,79 @@ from modules.user import Base
 class Transaction(Base):
     __tablename__ = 'transactions'
     _id = Column(Integer, primary_key=True)
-    _user_id = Column(Integer, ForeignKey('users._id'))
-    _book_id = Column(Integer, ForeignKey('books._id'))
-    _type = Column(String)  # Type of transaction: rental or return
+    _user_id = Column(Integer, ForeignKey('users._id'), unique=True)
+    _book_id = Column(Integer, ForeignKey('books._id'), unique=True)
+    _type = Column(String)  # Type of transaction: Rental/Return
     _checkout_date = Column(Date)
     _return_date = Column(Date)
     _fee = Column(Float)
-    _status = Column(Boolean)
+    _status = Column(Boolean) # Status of rental transaction: Paid/Non-paid
     
     # Define relationships
     user = relationship("User", back_populates="transactions")
     book = relationship("Book", back_populates="transactions")
     
-    # FIXME: Add setters validation
     # Define setter methods for attributes
     def set_user_id(self, user_id):
+        # User id attribute validation
+        if not isinstance(user_id, int):
+            raise ValueError("User id must be an integer")
+
+        # Set user id attribute            
         self._user_id = user_id
     
     def set_book_id(self, book_id):
+        # Book id attribute validation
+        if not isinstance(book_id, int):
+            raise ValueError("Book id must be an integer")
+        
+        # Set book id attribute
         self._book_id = book_id
         
     def set_type(self, type):
+        # Type attribute validation
+        if not isinstance(type, str):
+            raise ValueError("Type must be a string")
+        
+        if type not in ['Rental', 'Return', 'Early Return', 'Late Return']:
+            raise ValueError("Type is not supported")
+            
+        # Set type attribute
         self._type = type
         
     def set_checkout_date(self, checkout_date):
+        # Checkout date attribute validation
+        if not isinstance(checkout_date, datetime.date):
+            raise ValueError("Checkout date must be a date object (yyyy-mm-dd)")
+        
+        # Set checkout date attribute
         self._checkout_date = checkout_date
         
     def set_return_date(self, return_date):
+        # Return date attribute validation
+        if not isinstance(return_date, datetime.date):
+            raise ValueError("Return date must be a date object (yyyy-mm-dd)")
+        
+        # Set return date attribute
         self._return_date = return_date
         
     def set_fee(self, fee):
+        # Fee attribute validation
+        if not isinstance(fee, float):
+            raise ValueError("Fee must be a float")
+        
+        if fee < 0:
+            raise ValueError("Fee must be a positive float")
+        
+        # Set fee attribute
         self._fee = fee
     
     def set_status(self, active):
+        # Status attribute validation
+        if not isinstance(active, bool):
+            raise ValueError("Status must be a boolean")
+        
+        # Set status attribute
         self._status = active
         
     # Define getter methods for attributes

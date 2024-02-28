@@ -1,14 +1,29 @@
 ###################################################################################################
 #######################################       IMPORTS       #######################################
 ###################################################################################################
+import re
+
 from sqlalchemy import Column, Integer, String, Boolean, Float
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from werkzeug.security import check_password_hash, generate_password_hash
-
 # Configuration
 Base = declarative_base()
 
+# Helper function for string attributes validation
+def basic_string_attribute_validation(string, attribute):
+    # Basic string attribute validation
+    if not isinstance(string, str):
+        return f"{attribute} must be a string"
+    
+    if not string:
+        return f"{attribute} cannot be empty"
+    
+    if len(string) > 50:
+        return f"{attribute} must have a maximum of 50 characters"
+    
+    # Valid string
+    return True
 ###################################################################################################
 #######################################       CLASSES       #######################################
 ###################################################################################################
@@ -23,31 +38,53 @@ class User(Base):
     # Define relationship with transactions
     transactions = relationship("Transaction", back_populates="user")
     
-    # FIXME: Add better setter validation
     # Define setter methods for attributes
     def set_username(self, username):
-        if isinstance(username, str):
-            self._username = username
-        else:
-            raise ValueError("Username must be a string")
+        # Call auxiliar function to validate basic string attribute features
+        validation_result = basic_string_attribute_validation(username, attribute='Username')
+        if isinstance(validation_result, str):
+            raise ValueError(validation_result)
+        
+        # Regular expression pattern allowing alphanumeric characters and specified special characters
+        pattern = r'^[a-zA-Z0-9_-]+$'
+
+        # Match the input string against the pattern
+        if not re.match(pattern, username):
+            raise ValueError("Username can't contain spaces or special characters that are not - or _")
+        
+        # Set username attribute
+        self._username = username
     
     def set_password(self, password):
-        if isinstance(password, str):
-            self._password = generate_password_hash(password)
-        else:
-            raise ValueError("Password must be a string")
+        # Call auxiliar function to validate basic string attribute features
+        validation_result = basic_string_attribute_validation(password, attribute='Password')
+        if isinstance(validation_result, str):
+            raise ValueError(validation_result)
+        
+        if ' ' in password:
+            raise ValueError("Password cannot contain spaces")
+        
+        # Set password attribute
+        self._password = generate_password_hash(password)
     
     def set_is_admin(self, is_admin):
-        if isinstance(is_admin, bool):
-            self._is_admin = is_admin
-        else:
+        # is admin attribute validation
+        if not isinstance(is_admin, bool):
             raise ValueError("is_admin must be a boolean")
+        
+        # Set is_admin attribute
+        self._is_admin = is_admin
     
     def set_total_fee(self, fee):
-        if isinstance(fee, float):
-            self._total_fee = fee
-        else:
+        # Total fee attribute validation
+        if not isinstance(fee, float):
             raise ValueError("Total fee must be a float")
+        
+        if fee < 0:
+            raise ValueError("Total fee must be a positive float")
+        
+        # Set total fee attribute
+        self._total_fee = fee
         
     # Define getter methods for attributes
     def get_id(self):
