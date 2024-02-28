@@ -32,9 +32,6 @@ session = Session()
 
 # Load books into the test database
 load_books(session, "books_test.json")
-
-# Headers for table printing
-headers = ["Title", "Author", "Publisher", "Genre", "Edition", "Publication Date", "Description", "Price", "ISBN"]
 ###################################################################################################
 ################################       SETTER/GETTER TESTS       ##################################
 ###################################################################################################
@@ -661,7 +658,6 @@ def test_authenticate_price():
     books = Book.authenticate_price(session, 1.99)
     assert books is None
     
-# TODO: 
 def test_authenticate_isbn():
     # Test authentication of book isbn
     book = Book.authenticate_isbn(session, "111-2-33-444444-5")

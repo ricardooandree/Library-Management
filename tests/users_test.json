@@ -1,0 +1,7 @@
+{
+    "admins": [
+        {"username": "ricardo", "password": "password1"},
+        {"username": "andre", "password": "password2"},
+        {"username": "silva", "password": "password3"}
+    ]
+}

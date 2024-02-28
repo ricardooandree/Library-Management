@@ -7,6 +7,7 @@ from sqlalchemy import Column, Integer, String, Boolean, Float
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from werkzeug.security import check_password_hash, generate_password_hash
+
 # Configuration
 Base = declarative_base()
 
@@ -121,14 +122,16 @@ class User(Base):
         # Query the database to find a user with the specified username
         user = session.query(User).filter(User._username == username).first()
         
-        # Check if no user was found with the specified username
-        if not user:
+        # Check if user was found with the specified username
+        if user:
+            return False    # Validation failed
+        else:
             # Check if password input matches the password confirmation
             if password == confirm_password:
                 # TODO: Check if password meets safety requirements
                 return True    # Validation successful
-        else:    
-            return False    # Validation failed
+            else:
+                return False # Validation failed
         
     @classmethod
     def authenticate(cls, session, username, password):
