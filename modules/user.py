@@ -183,6 +183,29 @@ class User(Base):
             return None    # Authentication failed
     
     @classmethod
+    def authenticate_username(cls, session, username):
+        """Authenticates user existence
+        
+        Args:
+            session (Session): The SQLAlchemy session object to perform database queries.
+            username (str): The username provided to validate the user.
+            
+        Returns:
+            user: If book with specific ISBN exists in the database.
+            None: If publication date does not exist in the database.
+            
+        This method checks if there's a user in the database with the specified username since username is unique for each user, which means, checking if the user exists in the database or not.
+        """
+        # Query the database to find a user with the specified username
+        user = session.query(User).filter(User._username == username).first()
+        
+        # Check if user was found with the specified username
+        if user:
+            return user
+        else:
+            return None
+    
+    @classmethod
     def authenticate_id(cls, session, user_id):
         """Authenticates user existence
         

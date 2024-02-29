@@ -205,7 +205,35 @@ class Transaction(Base):
             return False    # Registration failed
     
     @classmethod
-    def get_all(cls, session, transaction_type: str = None) -> list:
+    def get_all_username(cls, session, user_id):
+        """Get all transactions corresponding to the given user
+        
+        Args:
+            session (Session): The SQLAlchemy session object to perform database queries.
+            user_id (int): User ID to filter transactions by.
+            
+        Returns:
+            transactions (list): A list of all transactions in the database matching the user ID.
+        """
+        # Query the database to get all transactions made by the given user
+        return session.query(Transaction).filter(Transaction._user_id == user_id).all()
+    
+    @classmethod
+    def get_all_isbn(cls, session, book_id):
+        """Get all transactions corresponding to the given book
+        
+        Args:
+            session (Session): The SQLAlchemy session object to perform database queries.
+            book_id (int): Book ID to filter transactions by.
+            
+        Returns:
+            transactions (list): A list of all transactions in the database matching the book ID.
+        """
+        # Query the database to get all transactions made by the given user
+        return session.query(Transaction).filter(Transaction._book_id == book_id).all()
+    
+    @classmethod
+    def get_all_type(cls, session, transaction_type: str = None) -> list:
         """Get all transactions in the database
         
         Args:

@@ -16,6 +16,8 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from datetime import datetime, timedelta
 from pyfiglet import Figlet
+from tabulate import tabulate
+
 ###################################################################################################
 #################################       APP CONFIGURATION        ##################################
 ###################################################################################################
@@ -58,7 +60,6 @@ def basic_string_attribute_validation(string, attribute):
 ###################################################################################################
 ###################################       SEARCH BOOKS        #####################################
 ###################################################################################################
-# NOTE: 29/02/2024: ADMIN SEARCHING + ADD/REMOVE BOOK + SHOW BALANCE
 # TODO: ADD TESTS TRANSACTION CLASS
 # TODO: ADD PASSWORD SAFETY REQUIREMENTS CHECK
 # TODO: ADD SETTER USER_ID + BOOK_ID VALIDATION IF IT EXISTS???
@@ -579,7 +580,7 @@ def list_books(_type=None):
 
     if _type:
         # Get all transaction objects in the database
-        transactions = Transaction.get_all(session, transaction_type=_type)
+        transactions = Transaction.get_all_type(session, transaction_type=_type)
         
         if not transactions:
             print("No transactions were found in the database\n")
@@ -611,7 +612,7 @@ def list_transactions(_type=None, status=None):
     """List transactions by type or all transactions"""
     
     # Get all transaction objects in the database
-    transactions = Transaction.get_all(session, transaction_type=_type)
+    transactions = Transaction.get_all_type(session, transaction_type=_type)
     
     if not transactions:
         print("No transactions were found in the database\n")
@@ -659,11 +660,12 @@ def list_users_fees():
 
     
 def admin_list_menu():
-    """List admin"""
+    """List admin menu"""
     
-    # Create admin main menu object
+    # Create admin list menu object
     list_menu = Menu("List Menu", ["List available books", "List rented books", "List all transactions", "List rental transactions", "List return transactions", "List users total fees", "List active rentals", "Exit"])
-    # Display admin menu and get user input
+    
+    # Display admin list and get user input
     while True:
         choice = list_menu.display()
         
@@ -690,8 +692,108 @@ def admin_list_menu():
 ###################################################################################################
 ####################################       SEARCHING        #######################################
 ###################################################################################################
+def admin_search_user_transactions():
+    """Displays all transactions made by a user"""
+    
+    # Get username input
+    username = get_username()
+    
+    # Get user object by username
+    user = User.authenticate_username(session, username)
+    
+    if user is None:
+        print("There's no user registered in the database with that username\n")
+        return
+    
+    # Get all transaction objects made by the user
+    transactions = Transaction.get_all_username(session, user.get_id())
+    
+    if not transactions:
+        print("No transactions made by user were found\n")
+        return
+    
+    # Get all books objects that have transaction information
+    books = []
+    for transaction in transactions:
+        books.append(Book.authenticate_id(session, transaction.get_book_id()))
+    
+    # Get all book and user ids
+    book_isbns = []
+    for book in books:
+        if book is not None:
+            book_isbns.append(book.get_isbn())
+        else: 
+            book_isbns.append("Book doesn't exist anymore")
+    
+    user_usernames = []
+    for _ in range(len(transactions)):
+        user_usernames.append(username)
+    
+    # Print all user transactions
+    Transaction.display(transactions, book_isbns, user_usernames)
+    
+    
+def admin_search_book_transactions():
+    """Displays all transactions corresponding to a book"""
+    
+    # Get isbn input
+    isbn = get_isbn()
+    
+    # Get book object by isbn
+    book = Book.authenticate_isbn(session, isbn)
 
+    if book is None:
+        print("There's no book registered in the database with that ISBN\n")
+        return
+    
+    # Get all transaction objects made for the book
+    transactions = Transaction.get_all_isbn(session, book.get_id())
+    
+    if not transactions:
+        print("No transactions for that book were found\n")
+        return
+    
+    # Get all users objects that have transaction information
+    users = []
+    for transaction in transactions:
+        users.append(User.authenticate_id(session, transaction.get_user_id()))
+    
+    # Get all book and user ids
+    user_usernames = []
+    for user in users:
+        if user is not None:
+            user_usernames.append(user.get_username())
+        else: 
+            user_usernames.append("User doesn't exist anymore")
+    
+    book_isbns = []
+    for _ in range(len(transactions)):
+        book_isbns.append(isbn)
+    
+    # Print all book transactions
+    Transaction.display(transactions, book_isbns, user_usernames)
+    
 
+def admin_searching_menu():
+    """Search admin menu"""
+    
+    # Create admin search menu object
+    search_menu = Menu("Search Menu", ["Search user transactions", "Search book transactions", "Exit"])
+    
+    # Display admin search menu and get user input
+    while True:
+        choice = search_menu.display()
+        
+        match choice:
+            case "1":
+                admin_search_user_transactions()
+            case "2":
+                admin_search_book_transactions()
+            case "3":
+                return
+            case _:
+                print("Invalid input\n")
+                
 ###################################################################################################
 #################################       ADD/REMOVE BOOK        ####################################
 ###################################################################################################
@@ -790,7 +892,21 @@ def admin_remove_book():
 ##################################       SHOW BALANCE        ######################################
 ###################################################################################################
 def admin_show_balance():
-    ...
+    """Display library's balance"""
+    
+    # Get all transaction objects with of type Return
+    transactions = Transaction.get_all_type(session, transaction_type="Return")
+    
+    # Library's balance
+    balance = 0.0
+    for transaction in transactions:
+        balance += transaction.get_fee()
+        
+    # Print balance
+    headers = ["Balance"]
+    table = [[balance]]
+    
+    print(tabulate(table, headers, tablefmt="double_outline"))
 
 ###################################################################################################
 ################################       LOGIN/REGISTRATION        ##################################
@@ -936,13 +1052,13 @@ def admin_menu():
             case "1":
                 admin_list_menu()
             case "2":
-                ...     #admin_searching_menu()
+                admin_searching_menu()
             case "3":
                 admin_add_book()
             case "4":
                 admin_remove_book()
             case "5":
-                ...     #show_balance()
+                admin_show_balance()
             case "6":
                 sys.exit()
             case _:
@@ -985,7 +1101,6 @@ def log_in():
     else:  
         user_menu(user)
         
-
 ###################################################################################################
 ################################       INITIALIZATION/MAIN        #################################
 ###################################################################################################
