@@ -539,7 +539,49 @@ class Book(Base):
         session.commit()
 
         return True    # Successfully added a new book
+    
+    @classmethod
+    def remove(cls, session, book):
+        """Removes a book from the database
         
+        Args:
+            session (Session): The SQLAlchemy session object to perform database queries.
+            book: The book object to be removed from the database.
+        
+        Returns:
+            bool: True if successfully removed a book from the database, False otherwise.
+        
+        This method alters the quantity of the specified book to -1 in order to signify that the book was removed from the database.
+        """
+        # Update the quantity of the book
+        book.set_quantity(book.get_quantity() - 1)
+        
+        # Commit the changes to the database
+        session.commit()
+        
+        return True    # Successfully removed a book
+    
+    @classmethod
+    def delete(cls, session, book):
+        """Deletes a book from the database
+        
+        Args:
+            session (Session): The SQLAlchemy session object to perform database queries.
+            book: The book object to be deleted from the database.
+            
+        Returns:
+        bool: True if successfully removed a book from the database, False otherwise.
+        
+        This method deletes the book from the database.
+        """
+        # Remove the book from the database
+        session.delete(book)
+        
+        # Commit the changes to the database
+        session.commit()
+        
+        return True    # Successfully removed a book
+
     @classmethod
     def get_all(cls, session):
         """Get all books in the database

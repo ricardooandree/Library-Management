@@ -245,6 +245,28 @@ class User(Base):
             return False    # Registration failed
 
     @classmethod
+    def remove(cls, session, user):
+        """Remove a user from the database
+        
+        Args:
+            session (Session): The SQLAlchemy session object to perform database queries.
+            user (User): The user to be removed from the database.
+        
+        Returns:
+            bool: True if successfully removed a user from the database.
+        
+        This method removes a specified user from the database.
+        """
+        # Remove the book from the database
+        session.delete(user)
+        
+        # Commit the changes to the database
+        session.commit()
+        
+        return True    # Successfully removed a book
+    
+    
+    @classmethod
     def get_all_fee(cls, session):
         """Get all users fees in the database
         

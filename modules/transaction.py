@@ -148,7 +148,10 @@ class Transaction(Base):
                 row = [username, isbn, transaction.get_type(), transaction.get_checkout_date(), transaction.get_return_date(), transaction.get_fee()]
                 table.append(row)
         
-        print(tabulate(table, headers, tablefmt="double_outline"))
+        if not table:
+            print("There's no active rentals at the moment\n")
+        else:
+            print(tabulate(table, headers, tablefmt="double_outline"))
         
     @classmethod
     def authenticate_user_book(cls, session, user_id, book_id, type=None):
@@ -163,6 +166,18 @@ class Transaction(Base):
         else:
             return None
     
+    @classmethod
+    def authenticate_book_id(cls, session, book_id, type=None):
+        """Authenticates transactions based on a specific book ID"""
+        # Query the database to find a transaction with the specified ISBN
+        transactions = session.query(Transaction).filter(Transaction._book_id == book_id, Transaction._type == type, Transaction._status == True).all()
+
+        # Check if transaction exists in the database
+        if transactions: 
+            return transactions
+        else:
+            return None
+        
     @classmethod
     def register(cls, session, user_id, book_id, checkout_date, return_date, fee, status, type):
         """Register new transaction

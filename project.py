@@ -575,7 +575,7 @@ def return_book(user):
 #####################################       LISTING        ########################################
 ###################################################################################################
 def list_books(_type=None):
-    """List books by transaction type"""
+    """List books by transaction type or all available books"""
 
     if _type:
         # Get all transaction objects in the database
@@ -624,16 +624,21 @@ def list_transactions(_type=None, status=None):
         users.append(User.authenticate_id(session, transaction.get_user_id()))
     
     # Get all book and user ids
-    book_isbns = [b.get_isbn() for b in books]
-    user_usernames = [u.get_username() for u in users]
+    book_isbns = []
+    for book in books:
+        if book is not None:
+            book_isbns.append(book.get_isbn())
+        else: 
+            book_isbns.append("Book doesn't exist anymore")
     
-    # Check if there's no book or user information
-    for book, user in zip(books, users):
-        if book is None or user is None:
-            print("No book or user were found for a specific transaction\n")
-            return
+    user_usernames = []
+    for user in users:
+        if user is not None:
+            user_usernames.append(user.get_username())
+        else:
+            user_usernames.append("User doesn't exist anymore")
 
-    # Calls display method instance based on the listing request
+    # Calls display method instance based on the listing request - by type or active rentals
     if status is None:
         Transaction.display(transactions, book_isbns, user_usernames)
     else:
@@ -690,12 +695,96 @@ def admin_list_menu():
 ###################################################################################################
 #################################       ADD/REMOVE BOOK        ####################################
 ###################################################################################################
-def admin_add_book():
-    ...
+def get_description():
+    """Get description input from the user"""
     
+    # Get user description
+    while True:
+        print("Usage example: Young wizard Harry Potter receives his invitational letter to study at Hogwarts\n")
+        
+        # Get user input
+        description = input("Enter description: ")
+        
+        if not description:
+            print("Description cannot be empty\n")
+            continue
+        
+        if not description[0].isalpha() or not description[-1].isalpha():
+            print("Description must not start or end with non-alpha characters\n")
+            continue
+        
+        if len(description) > 500:
+            print("Description must be a maximum of 500 characters")
+            continue
+        
+        # Return valid description
+        return description
+    
+    
+def admin_add_book():
+    """Adds a book to the database"""
+    
+    # Get isbn attribute input 
+    isbn = get_isbn()
+    
+    # Validates if the already book exists
+    existing_book = Book.authenticate_isbn(session, isbn)
+    
+    if existing_book is None:
+        # Get other book attributes input
+        title = get_title()
+        author = get_author()
+        publisher = get_publisher()
+        genre = get_genre()
+        edition = get_edition()
+        publication_date = get_publication_date()
+        description = get_description()
+        price = get_price()
+        
+        # Register the book
+        Book.register(session, title, author, publisher, genre, edition, publication_date, description, price, isbn)
+        print("Successfully registered a new book in the database\n")
+        
+    else:
+        # Adds copy of the book
+        Book.add(session, existing_book)
+        print("Succesfully added a new book in the database\n")
+
 
 def admin_remove_book():
-    ...
+    """Removes a book from the database"""
+    
+    # Get isbn attribute input 
+    isbn = get_isbn()
+    
+    # Validates if the already book exists
+    existing_book = Book.authenticate_isbn(session, isbn)
+    
+    if existing_book:
+        # Get on going rental transactions for that specific book
+        transactions = Transaction.authenticate_book_id(session, existing_book.get_id(), type="Rental")
+        
+        # If there's no available books for renting and there's at least one currently rented can't remove the book
+        if existing_book.get_quantity() == 0 and transactions:
+            print("There are currently no ongoing rentals for that book, can't remove the book from the database\n")
+            return
+        
+        # If there's available books for renting then can remove one book
+        if existing_book.get_quantity() > 0:
+            # Remove the book
+            Book.remove(session, existing_book)
+            print("Succesfully removed the book in the database\n")
+            return
+        
+        if existing_book.get_quantity() == 0 and not transactions:
+            # Delete the book from the database
+            Book.delete(session, existing_book)
+            print("Succesfully deleted the book in the database\n")
+            return
+        
+    else:
+        print("The book does not exist in the database\n")
+        
 
 ###################################################################################################
 ##################################       SHOW BALANCE        ######################################
@@ -833,10 +922,9 @@ def log_in_form():
         init_menu()
           
     
-def admin_menu(user):
+def admin_menu():
     """Displays admin menu"""
-    # NOTE: Listing options: rented books, available books, etc.
-    # NOTE: Searching options: search user with rented books, etc.
+    
     # Create admin main menu object
     admin_menu = Menu("Admin Menu", ["Listing", "Search", "Add book", "Remove Book", "Show balance", "Exit"])
     
@@ -850,9 +938,9 @@ def admin_menu(user):
             case "2":
                 ...     #admin_searching_menu()
             case "3":
-                ...     #add_book()
+                admin_add_book()
             case "4":
-                ...     #remove_book()
+                admin_remove_book()
             case "5":
                 ...     #show_balance()
             case "6":
@@ -893,7 +981,7 @@ def log_in():
 
     # Check if user is admin or not and displays the corresponding menu
     if user.get_is_admin():   
-        admin_menu(user)
+        admin_menu()
     else:  
         user_menu(user)
         
