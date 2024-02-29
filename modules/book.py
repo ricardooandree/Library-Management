@@ -428,16 +428,17 @@ class Book(Base):
     
     @classmethod
     def authenticate_isbn(cls, session, isbn):
-        """Validates book existence
+        """Authenticates book existence
         
         Args:
             session (Session): The SQLAlchemy session object to perform database queries.
             isbn (str): the isbn provided to validate the book.
             
         Returns:
-            bool: True if the book does not exist in the database, False otherwise.
+            book: If book with specific ISBN exists in the database.
+            None: If publication date does not exist in the database.
             
-        This method checks if there's a book in the database with the specified isbn since isbn is unique for each book, which means, checking if the book exists in the database or not.
+        This method checks if there's a book in the database with the specified ISBN since ISBN is unique for each book, which means, checking if the book exists in the database or not.
         """
         # Query the database to find a book with the specified isbn
         book = session.query(Book).filter(Book._isbn == isbn).first()
@@ -447,7 +448,30 @@ class Book(Base):
             return book
         else:
             return None
+    
+    @classmethod
+    def authenticate_id(cls, session, book_id):
+        """Authenticates book existence
         
+        Args:
+            session (Session): The SQLAlchemy session object to perform database queries.
+            book_id (int): the id provided to validate the book.
+            
+        Returns:
+            book: If book with specific ISBN exists in the database.
+            None: If publication date does not exist in the database.
+            
+        This method checks if there's a book in the database with the specified id since id is unique for each book, which means, checking if the book exists in the database or not.
+        """
+        # Query the database to find a book with the specified id
+        book = session.query(Book).filter(Book._id == book_id).first()
+        
+        # Check if book with specific id exists in the database
+        if book:
+            return book
+        else:
+            return None
+    
     @classmethod
     def register(cls, session, title, author, publisher, genre, edition, publication_date, description, price, isbn):
         """Register a new book in the database
@@ -536,7 +560,28 @@ class Book(Base):
             return books
         else:
             return None
-          
+    
+    @classmethod
+    def get_all_available(cls, session):
+        """Get all available books in the database
+        
+        Args:
+            session (Session): The SQLAlchemy session object to perform database queries.
+            
+        Returns:
+            books (list): A list of all available books in the database.
+            
+        This method queries the database to get all available the books in the database.
+        """
+        # Query the database to get all available books
+        books = session.query(Book).filter(Book._quantity > 0).all()
+        
+        # Check if book with specific id exists in the database
+        if books:
+            return books
+        else:
+            return None
+    
     def rent_book(self, session):
         """Rents a book
         """

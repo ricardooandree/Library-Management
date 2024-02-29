@@ -58,8 +58,7 @@ def basic_string_attribute_validation(string, attribute):
 ###################################################################################################
 ###################################       SEARCH BOOKS        #####################################
 ###################################################################################################
-# NOTE: 28/02/2024: UNIT TESTING + START THINKING ABOUT ADMIN IMPLEMENTATION
-# TODO: ADD TESTS USER CLASS
+# NOTE: 29/02/2024: ADMIN SEARCHING + ADD/REMOVE BOOK + SHOW BALANCE
 # TODO: ADD TESTS TRANSACTION CLASS
 # TODO: ADD PASSWORD SAFETY REQUIREMENTS CHECK
 # TODO: ADD SETTER USER_ID + BOOK_ID VALIDATION IF IT EXISTS???
@@ -571,7 +570,139 @@ def return_book(user):
         return
 
     print("Successfully registered book return\n")
+
+###################################################################################################
+#####################################       LISTING        ########################################
+###################################################################################################
+def list_books(_type=None):
+    """List books by transaction type"""
+
+    if _type:
+        # Get all transaction objects in the database
+        transactions = Transaction.get_all(session, transaction_type=_type)
+        
+        if not transactions:
+            print("No transactions were found in the database\n")
+            return
+        
+        # Get all book objects that have transaction information
+        books = []
+        for transaction in transactions:
+            if transaction.get_status():
+                books.append(Book.authenticate_id(session, transaction.get_book_id()))
+
+        if books:
+            Book.display_metadata(books)
+        else:
+            print("There are no active rented books\n")
+            return
+    else:
+        # Get all available book objects
+        books = Book.get_all_available(session)
+        
+        if books:
+            Book.display_metadata(books)
+        else:
+            print("There are no available books\n")
+            return
+        
     
+def list_transactions(_type=None, status=None):
+    """List transactions by type or all transactions"""
+    
+    # Get all transaction objects in the database
+    transactions = Transaction.get_all(session, transaction_type=_type)
+    
+    if not transactions:
+        print("No transactions were found in the database\n")
+        return
+    
+    # Get all books and users objects that have transaction information
+    books, users = [], []
+    for transaction in transactions:
+        books.append(Book.authenticate_id(session, transaction.get_book_id()))
+        users.append(User.authenticate_id(session, transaction.get_user_id()))
+    
+    # Get all book and user ids
+    book_isbns = [b.get_isbn() for b in books]
+    user_usernames = [u.get_username() for u in users]
+    
+    # Check if there's no book or user information
+    for book, user in zip(books, users):
+        if book is None or user is None:
+            print("No book or user were found for a specific transaction\n")
+            return
+
+    # Calls display method instance based on the listing request
+    if status is None:
+        Transaction.display(transactions, book_isbns, user_usernames)
+    else:
+        Transaction.display_active(transactions, book_isbns, user_usernames)
+    
+
+def list_users_fees():
+    """List users total fees"""
+    
+    # Get users objects with total fees higher than 0
+    users = User.get_all_fee(session)
+    
+    if users:
+        User.display(users)
+    else:
+        print("There's no users with unpaid fees in the database\n")
+        return
+
+    
+def admin_list_menu():
+    """List admin"""
+    
+    # Create admin main menu object
+    list_menu = Menu("List Menu", ["List available books", "List rented books", "List all transactions", "List rental transactions", "List return transactions", "List users total fees", "List active rentals", "Exit"])
+    # Display admin menu and get user input
+    while True:
+        choice = list_menu.display()
+        
+        match choice:
+            case "1":
+                list_books()
+            case "2":
+                list_books(_type="Rental")
+            case "3":
+                list_transactions()
+            case "4":
+                list_transactions(_type="Rental")
+            case "5":
+                list_transactions(_type="Return")
+            case "6":
+                list_users_fees()
+            case "7":
+                list_transactions(_type="Rental", status="active")
+            case "8":
+                return
+            case _:
+                print("Invalid input\n") 
+                
+###################################################################################################
+####################################       SEARCHING        #######################################
+###################################################################################################
+
+
+###################################################################################################
+#################################       ADD/REMOVE BOOK        ####################################
+###################################################################################################
+def admin_add_book():
+    ...
+    
+
+def admin_remove_book():
+    ...
+
+###################################################################################################
+##################################       SHOW BALANCE        ######################################
+###################################################################################################
+def admin_show_balance():
+    ...
+
 ###################################################################################################
 ################################       LOGIN/REGISTRATION        ##################################
 ###################################################################################################
@@ -701,7 +832,7 @@ def log_in_form():
         print("Wrong credentials\n")
         init_menu()
           
-
+    
 def admin_menu(user):
     """Displays admin menu"""
     # NOTE: Listing options: rented books, available books, etc.
@@ -715,7 +846,7 @@ def admin_menu(user):
         
         match choice:
             case "1":
-                ...     #admin_listing_menu()
+                admin_list_menu()
             case "2":
                 ...     #admin_searching_menu()
             case "3":

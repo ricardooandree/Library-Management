@@ -699,3 +699,11 @@ def test_calculate_fee():
         
         assert book.calculate_fee(return_date, current_date) == 1.9980000000000002
         
+        
+        
+# TODO:
+# TODO:
+# TODO:
+
+# def test_authenticate_id():
+# def test_get_all_available():

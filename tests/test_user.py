@@ -155,3 +155,10 @@ def test_return_book():
     assert user.return_book(session, 10.00) == True
     
     assert user.get_total_fee() == 10.00
+    
+    
+# TODO:
+# TODO:
+# TODO:
+
+# def test_authenticate_id():

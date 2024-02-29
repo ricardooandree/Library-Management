@@ -3,10 +3,13 @@
 ###################################################################################################
 import datetime
 
-from sqlalchemy import Column, Float, Integer, String, Date, Boolean, ForeignKey
+from sqlalchemy import Column, Float, Integer, String, Date, Boolean, ForeignKey, or_
 from sqlalchemy.orm import relationship
 from modules.user import Base
+from tabulate import tabulate
 
+# Headers for table printing
+headers = ["Username", "Book ISBN", "Type", "Checkout Date", "Return Date", "Fee", "Status"]
 ###################################################################################################
 #######################################       CLASSES       #######################################
 ###################################################################################################
@@ -89,6 +92,12 @@ class Transaction(Base):
         self._status = active
         
     # Define getter methods for attributes
+    def get_user_id(self):
+        return self._user_id
+    
+    def get_book_id(self):
+        return self._book_id
+    
     def get_type(self):
         return self._type
     
@@ -104,9 +113,43 @@ class Transaction(Base):
     def get_status(self):
         return self._status
     
-    def display(self):
-        ...
+    def display(transactions, book_isbns, user_usernames):
+        """Displays transaction data
+        
+        Args:
+            transactions: Transaction object that can be a list of objects or a single object to be displayed. 
+            
+        Returns:
+            No return value.
+            
+        This instance method prints the transaction data as a string, this being, username, ISBN, type, checkout date, return date, fee, and status.
+        """
+        table = []
+        for transaction, isbn, username in zip(transactions, book_isbns, user_usernames):
+            status = transaction.get_status()
+            if status:
+                status = "Active rental"
+            else:
+                status = "Non-active rental/returned"
+                
+            row = [username, isbn, transaction.get_type(), transaction.get_checkout_date(), transaction.get_return_date(), transaction.get_fee(), status]
+            table.append(row)
+        
+        print(tabulate(table, headers, tablefmt="double_outline"))
 
+    def display_active(transactions, book_isbns, user_usernames):
+        """Displays active transactions data
+        """
+        headers = ["Username", "Book ISBN", "Type", "Checkout Date", "Return Date", "Fee"]
+        table = []
+        for transaction, isbn, username in zip(transactions, book_isbns, user_usernames):
+            status = transaction.get_status()
+            if status:
+                row = [username, isbn, transaction.get_type(), transaction.get_checkout_date(), transaction.get_return_date(), transaction.get_fee()]
+                table.append(row)
+        
+        print(tabulate(table, headers, tablefmt="double_outline"))
+        
     @classmethod
     def authenticate_user_book(cls, session, user_id, book_id, type=None):
         """Authenticates a specific user rental transactions
@@ -145,5 +188,36 @@ class Transaction(Base):
             return True    # Registration successful
         else:
             return False    # Registration failed
+    
+    @classmethod
+    def get_all(cls, session, transaction_type: str = None) -> list:
+        """Get all transactions in the database
         
+        Args:
+            session (Session): The SQLAlchemy session object to perform database queries.
+            transaction_type (str, optional): Type of transactions to filter (e.g., "Rental", "Return").
+            
+        Returns:
+            transactions (list): A list of all transactions in the database matching the type.
+        """
+        if transaction_type is None:
+            # Query the database to get all transactions
+            return session.query(Transaction).all()
+        
+        elif transaction_type == "Rental":
+            # Query the database to get all rental transactions
+            return session.query(Transaction).filter(Transaction._type == "Rental").all()
+        
+        elif transaction_type == "Return":
+            # Query the database to get all return transactions
+            return session.query(Transaction).filter(
+                or_(
+                    Transaction._type == "Return",
+                    Transaction._type == "Early Return",
+                    Transaction._type == "Late Return"
+                )
+            ).all()
+        
+        else:
+            return []  # Return an empty list if no matching transactions or invalid type
         

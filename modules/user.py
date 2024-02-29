@@ -7,9 +7,13 @@ from sqlalchemy import Column, Integer, String, Boolean, Float
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from werkzeug.security import check_password_hash, generate_password_hash
+from tabulate import tabulate
 
 # Configuration
 Base = declarative_base()
+
+# Headers for table printing
+headers = ["Username", "Total fee"]
 
 # Helper function for string attributes validation
 def basic_string_attribute_validation(string, attribute):
@@ -103,6 +107,24 @@ class User(Base):
     def get_total_fee(self):
         return self._total_fee
     
+    def display(users):
+        """Display users
+        
+        Args:
+            user: User object that can be a list of objects or a single object to be displayed. 
+            
+        Returns:
+            No return value.
+            
+        This instance method prints the users data such as their username and total fee amount.
+        """
+        table = []
+        for user in users:
+            row = [user.get_username(), user.get_total_fee()]
+            table.append(row)
+        
+        print(tabulate(table, headers, tablefmt="double_outline"))
+        
     @classmethod
     def validate(cls, session, username, password, confirm_password):
         """Validates user registration credentials
@@ -161,6 +183,29 @@ class User(Base):
             return None    # Authentication failed
     
     @classmethod
+    def authenticate_id(cls, session, user_id):
+        """Authenticates user existence
+        
+        Args:
+            session (Session): The SQLAlchemy session object to perform database queries.
+            user_id (int): the id provided to validate the user.
+            
+        Returns:
+            user: If book with specific ISBN exists in the database.
+            None: If publication date does not exist in the database.
+            
+        This method checks if there's a user in the database with the specified id since id is unique for each user, which means, checking if the user exists in the database or not.
+        """
+        # Query the database to find a book with the specified id
+        user = session.query(User).filter(User._id == user_id).first()
+        
+        # Check if book with specific id exists in the database
+        if user:
+            return user
+        else:
+            return None
+    
+    @classmethod
     def register(cls, session, username, password, admin=False):
         """Register new user
         
@@ -199,6 +244,27 @@ class User(Base):
         else:
             return False    # Registration failed
 
+    @classmethod
+    def get_all_fee(cls, session):
+        """Get all users fees in the database
+        
+        Args:
+            session (Session): The SQLAlchemy session object to perform database queries.
+            
+        Returns:
+            books (list): A list of all users fees in the database.
+            
+        This method queries the database to get all the users fees in the database.
+        """
+        # Query the database to get all the books
+        users = session.query(User).filter(User._total_fee > 0).all()
+        
+        # Check if book exists in the database
+        if users:
+            return users
+        else:
+            return None
+        
     def rent_book(self, session, fee):
         """Rents a book
         """
