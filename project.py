@@ -19,6 +19,8 @@ from tabulate import tabulate
 ###################################################################################################
 #################################       APP CONFIGURATION        ##################################
 ###################################################################################################
+# FIXME: Requirements.txt
+# FIXME: Better book dataset
 # Initialize the SQLAlchemy engine for sqlite
 engine = create_engine('sqlite:///library.db')  # Adjust the database URL as needed
 
