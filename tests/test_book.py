@@ -728,3 +728,4 @@ def test_delete():
     
     book = Book.authenticate_isbn(session, "111-2-33-444444-5")
     assert book.delete(session, book) == True
+    

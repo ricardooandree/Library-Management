@@ -2,13 +2,14 @@
 #######################################       IMPORTS       #######################################
 ###################################################################################################
 import re
-
 from sqlalchemy import Column, Integer, String, Boolean, Float
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from werkzeug.security import check_password_hash, generate_password_hash
 from tabulate import tabulate
-
+###################################################################################################
+#######################################       HELPERS       #######################################
+###################################################################################################
 # Configuration
 Base = declarative_base()
 
@@ -29,6 +30,7 @@ def basic_string_attribute_validation(string, attribute):
     
     # Valid string
     return True
+
 ###################################################################################################
 #######################################       CLASSES       #######################################
 ###################################################################################################
@@ -107,6 +109,7 @@ class User(Base):
     def get_total_fee(self):
         return self._total_fee
     
+    # Define Class methods/instances
     def display(users):
         """Display users
         
@@ -188,7 +191,7 @@ class User(Base):
         
         Args:
             session (Session): The SQLAlchemy session object to perform database queries.
-            user_id (int): the id provided to validate the user.
+            user_id (int): The ID provided to validate the user.
             
         Returns:
             user: If book with specific ISBN exists in the database.
@@ -243,7 +246,6 @@ class User(Base):
             None: If registration failed.
             
         This method creates a new user with the given credentials and adds it to the database.
-        
         """
         # Create a new User object
         new_user = User()
@@ -297,8 +299,8 @@ class User(Base):
             
         Returns:
             books (list): A list of all users fees in the database.
-            
-        This method queries the database to get all the users fees in the database.
+            None: If there's no user fees in the database
+        This method queries the database to get all the users fees in the database, this being, users with fees > 0.
         """
         # Query the database to get all the books
         users = session.query(User).filter(User._total_fee > 0).all()
@@ -311,6 +313,15 @@ class User(Base):
         
     def rent_book(self, session, fee):
         """Rents a book
+        
+        Args:
+            session (Session): The SQLAlchemy session object to perform database queries.
+            fee (int): The fee to be added to the user total fee.
+        
+        Returns:
+            bool: True if sucessfully rented a book
+        
+        This method signifies the renting of a book from the database, by altering the user total fee.
         """
         # Get user total fee
         total_fee = self.get_total_fee()
@@ -325,6 +336,15 @@ class User(Base):
         
     def return_book(self, session, fee):
         """Return a book
+        
+        Args:
+            session (Session): The SQLAlchemy session object to perform database queries.
+            fee (int): The fee to be subtracted from the user total fee.
+        
+        Returns:
+            bool: True if sucessfully returned a book
+        
+        This method signifies the returning of a book from the database, by altering the user total fee.
         """
         # Get user total fee
         total_fee = self.get_total_fee()

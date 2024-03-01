@@ -284,3 +284,4 @@ def test_get_all_type():
     
     transactions = Transaction.get_all_type(session, "Return")
     assert len(transactions) == 4
+    

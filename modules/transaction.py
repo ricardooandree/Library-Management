@@ -2,14 +2,17 @@
 #######################################       IMPORTS       #######################################
 ###################################################################################################
 import datetime
-
 from sqlalchemy import Column, Float, Integer, String, Date, Boolean, ForeignKey, or_
 from sqlalchemy.orm import relationship
 from modules.user import Base
 from tabulate import tabulate
 
+###################################################################################################
+#######################################       HELPERS       #######################################
+###################################################################################################
 # Headers for table printing
 headers = ["Username", "Book ISBN", "Type", "Checkout Date", "Return Date", "Fee", "Status"]
+
 ###################################################################################################
 #######################################       CLASSES       #######################################
 ###################################################################################################
@@ -119,11 +122,14 @@ class Transaction(Base):
     def get_status(self):
         return self._status
     
+    # Define Class methods/instances
     def display(transactions, book_isbns, user_usernames):
         """Displays transaction data
         
         Args:
             transactions: Transaction object that can be a list of objects or a single object to be displayed. 
+            book_isbns (string list): List of book ISBNs to be displayed.
+            user_usernames (string list): List of user usernames to be displayed.
             
         Returns:
             No return value.
@@ -145,6 +151,16 @@ class Transaction(Base):
 
     def display_active(transactions, book_isbns, user_usernames):
         """Displays active transactions data
+        
+        Args:
+        transactions: Transaction object that can be a list of objects or a single object to be displayed.
+        book_isbns (string list): List of book ISBNs to be displayed.
+        user_usernames (string list): List of user usernames to be displayed.
+        
+        Returns:
+        No return value.
+        
+        This instance method prints the transaction data of active rental transactions as a string, this being, username, ISBN, type, checkout date, return date, fee, and status.
         """
         headers = ["Username", "Book ISBN", "Type", "Checkout Date", "Return Date", "Fee"]
         table = []
@@ -161,7 +177,18 @@ class Transaction(Base):
         
     @classmethod
     def authenticate_user_book(cls, session, user_id, book_id, type=None):
-        """Authenticates a transaction by user and book
+        """Authenticates a transaction by user, book and type
+        
+        Args:
+            session (Session): The SQLAlchemy session object to perform database queries.
+            user_id (int): The User ID provided to authenticate the transaction.
+            book_id (int): The Book ID provided to authenticate the transaction.
+            type (string): The type of transaction to authenticate the transaction.
+        
+        Returns:
+            transaction: Transaction object
+            None: If there's no transactions of tha
+        This class method authenticates a transaction by user, book and type.
         """
         # Check if type is None
         if type is None:
@@ -178,7 +205,18 @@ class Transaction(Base):
     
     @classmethod
     def authenticate_user_id(cls, session, user_id, type=None):
-        """Authenticates transactions based on a specific user ID
+        """Authenticates transactions based on a specific user ID and type
+        
+        Args:
+            session (Session): The SQLAlchemy session object to perform database queries.
+            user_id (int): The User ID provided to authenticate the transaction.
+            type (string): The type of transaction to authenticate the transaction.
+        
+        Returns:
+        transaction: Transaction object
+            None: If there's no transactions of the specified user ID and type.
+        
+        This class method authenticates transactions based on a specific user ID and type.
         """
         # Check if type is None
         if type is None:
@@ -195,7 +233,18 @@ class Transaction(Base):
         
     @classmethod
     def authenticate_book_id(cls, session, book_id, type=None):
-        """Authenticates transactions based on a specific book ID
+        """Authenticates transactions based on a specific book ID and type
+        
+        Args:
+            session (Session): The SQLAlchemy session object to perform database queries.
+            book_id (int): The Book ID provided to authenticate the transaction.
+            type (string): The type of transaction to authenticate the transaction.
+        
+        Returns:
+            transaction: Transaction object
+            None: If there's no transactions of the specified book ID and type.
+        
+        This class method authenticates transactions based on a specific book ID and type.
         """
         # Check if type is None
         if type is None:
@@ -213,6 +262,21 @@ class Transaction(Base):
     @classmethod
     def register(cls, session, user_id, book_id, checkout_date, return_date, fee, status, type):
         """Register new transaction
+        
+        Args:
+            session (Session): The SQLAlchemy session object to perform database queries.
+            user_id (int): The User ID provided to authenticate the transaction.
+            book_id (int): The Book ID provided to authenticate the transaction.
+            checkout_date (date): The date of the transaction.
+            return_date (date): The date of the transaction.
+            fee (float): The fee of the transaction.
+            status (bool): The status of the transaction.
+            type (string): The type of transaction.
+        
+        Returns:
+            bool: True if the transaction was successfully registered, False otherwise.
+        
+        This class method registers a new transaction.
         """
         # Create a new Transaction object
         new_transaction = Transaction()
@@ -246,6 +310,9 @@ class Transaction(Base):
             
         Returns:
             transactions (list): A list of all transactions in the database matching the user ID.
+            None: If there's no transactions matching the book ID, empty list.
+            
+        Get all transactions corresponding to a given user ID.
         """
         # Query the database to get all transactions made by the given user
         return session.query(Transaction).filter(Transaction._user_id == user_id).all()
@@ -260,6 +327,9 @@ class Transaction(Base):
             
         Returns:
             transactions (list): A list of all transactions in the database matching the book ID.
+            None: If there's no transactions matching the book ID, empty list.
+            
+        Get all transactions corresponding to a given book ID.
         """
         # Query the database to get all transactions made by the given user
         return session.query(Transaction).filter(Transaction._book_id == book_id).all()
@@ -274,6 +344,9 @@ class Transaction(Base):
             
         Returns:
             transactions (list): A list of all transactions in the database matching the type.
+            empty (list): If the transaction type doesn't match any type of transaction types possible.
+            
+        Get all transactions based on a specific transaction type.
         """
         if transaction_type is None:
             # Query the database to get all transactions

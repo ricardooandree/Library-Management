@@ -3,7 +3,7 @@
 ###################################################################################################
 import sys
 import re
-
+import os
 from modules.user import Base
 from modules.menu import Menu
 from modules.user import User
@@ -55,18 +55,15 @@ def basic_string_attribute_validation(string, attribute):
     # Valid string
     return True
 
+def clear_terminal():
+    # Clear the terminal screen
+    os.system('cls' if os.name == 'nt' else 'clear')
+    
 ###################################################################################################
 ###################################       SEARCH BOOKS        #####################################
 ###################################################################################################
-# TODO: ADD TESTS TRANSACTION CLASS
-# TODO: ADD PASSWORD SAFETY REQUIREMENTS CHECK
-# TODO: ONLY LOAD ADMIN ACCOUNTS/DATASET ONCE
-# TODO: ADD TERMINAL CLEAR EVERY TIME IT ENTERS A MENU
-# TODO: FINISH DOCSTRINGS
-
 def get_title():
     """Get title input from the user"""
-    
     while True:
         print("Usage example: OOP Python Fundamentals")
         
@@ -86,7 +83,6 @@ def get_title():
             
 def get_author():
     """Get author input from the user"""
-    
     # Get user author
     while True:
         print("Usage example: Ricardo Silva")
@@ -107,7 +103,6 @@ def get_author():
             
 def get_publisher():
     """Get publisher input from the user"""
-    
     # Get user publisher
     while True:
         print("Usage example: HarperCollins")
@@ -128,7 +123,6 @@ def get_publisher():
             
 def get_genre():
     """Get genre input from the user"""
-    
     # Get user author
     while True:
         print("Usage example: Educational")
@@ -146,7 +140,6 @@ def get_genre():
        
 def get_edition():
     """Get edition input from the user"""
-    
     # Get user edition
     while True:
         print("Usage example: 1")
@@ -169,7 +162,6 @@ def get_edition():
 
 def get_publication_date():
     """Get publication date input from the user"""
-    
     # Get user publication date
     while True:
         print("Usage example: 25-02-2024")
@@ -215,7 +207,6 @@ def get_publication_date():
 
 def get_price():
     """Get price input from the user"""
-    
     # Get user price
     while True:
         print("Usage example: 9.99")
@@ -237,7 +228,6 @@ def get_price():
 
 def show_all_books():
     """Displays all books in the database"""
-    
     # Get all books from the database
     books = Book.get_all(session)
     if books:
@@ -248,7 +238,6 @@ def show_all_books():
 
 def search_by_title():
     """Searches book by title, gets user input and handles validation cases"""
-    
     # Get user title input
     title = get_title()
     
@@ -262,7 +251,6 @@ def search_by_title():
         
 def search_by_author():
     """Searches books by author, gets user input and handles validation cases"""
-    
     # Get user author input
     author = get_author()
     
@@ -276,7 +264,6 @@ def search_by_author():
 
 def search_by_publisher():
     """Searches books by publisher, gets user input and handles validation cases"""
-    
     # Get user publisher input
     publisher = get_publisher()
     
@@ -290,7 +277,6 @@ def search_by_publisher():
         
 def search_by_genre():
     """Searches books by genre, gets user input and handles validation cases"""
-    
     # Get user genre input
     genre = get_genre()
     
@@ -304,7 +290,6 @@ def search_by_genre():
 
 def search_by_edition():
     """Searches books by edition, gets user input and handles validation cases"""
-    
     # Get user edition input
     edition = get_edition()
     
@@ -318,7 +303,6 @@ def search_by_edition():
 
 def search_by_publication_date():
     """Searches books by publication date, gets user input and handles validation cases"""
-    
     # Get user publication date input
     publication_date = get_publication_date()
     
@@ -332,7 +316,6 @@ def search_by_publication_date():
 
 def search_by_price():
     """Searches books by price, gets user input and handles validation cases"""
-    
     # Get user price input
     price = get_price()
     
@@ -344,9 +327,8 @@ def search_by_price():
         print("The library doesn't own any books of that price\n")
         
         
-def search_book():
+def search_book_menu():
     """Search book"""
-    
     # Create search book menu object
     search_book_menu = Menu("Search Book", ["Show all books", "Search by title", "Search by author", "Search by publisher", "Search by genre", "Search by edition", "Search by publication date", "Search by price", "Exit"])
     
@@ -380,8 +362,7 @@ def search_book():
 ####################################       RENT BOOK        #######################################
 ###################################################################################################
 def get_isbn():
-    """Get ISBN input from the user and handles validation"""
-    
+    """Get ISBN input from the user and handles validation""" 
     # Get user ISBN
     while True:
         print("Usage example: 111-2-33-444444-5")
@@ -416,7 +397,6 @@ def get_isbn():
 
 def get_return_date():
     """Get return date input from the user"""
-    
     # Get user return date
     while True:
         print("\nUsage example: 27-02-2024")
@@ -447,7 +427,6 @@ def get_return_date():
     
 def rent_book(user):
     """Rent book"""
-    
     # Print rent title
     print(figlet.renderText("Rent Book"))
     
@@ -503,7 +482,6 @@ def rent_book(user):
 ###################################################################################################
 def return_book(user):
     """Return book"""
-    
     # Print return title
     print(figlet.renderText("Return Book"))
     
@@ -577,7 +555,6 @@ def return_book(user):
 ###################################################################################################
 def list_books(_type=None):
     """List books by transaction type or all available books"""
-
     if _type:
         # Get all transaction objects in the database
         transactions = Transaction.get_all_type(session, transaction_type=_type)
@@ -609,8 +586,7 @@ def list_books(_type=None):
         
     
 def list_transactions(_type=None, status=None):
-    """List transactions by type or all transactions"""
-    
+    """List transactions by type or all transactions""" 
     # Get all transaction objects in the database
     transactions = Transaction.get_all_type(session, transaction_type=_type)
     
@@ -648,7 +624,6 @@ def list_transactions(_type=None, status=None):
 
 def list_users_fees():
     """List users total fees"""
-    
     # Get users objects with total fees higher than 0
     users = User.get_all_fee(session)
     
@@ -661,7 +636,6 @@ def list_users_fees():
     
 def admin_list_menu():
     """List admin menu"""
-    
     # Create admin list menu object
     list_menu = Menu("List Menu", ["List available books", "List rented books", "List all transactions", "List rental transactions", "List return transactions", "List users total fees", "List active rentals", "Exit"])
     
@@ -694,7 +668,6 @@ def admin_list_menu():
 ###################################################################################################
 def admin_search_user_transactions():
     """Displays all transactions made by a user"""
-    
     # Get username input
     username = get_username()
     
@@ -735,7 +708,6 @@ def admin_search_user_transactions():
     
 def admin_search_book_transactions():
     """Displays all transactions corresponding to a book"""
-    
     # Get isbn input
     isbn = get_isbn()
     
@@ -776,7 +748,6 @@ def admin_search_book_transactions():
 
 def admin_searching_menu():
     """Search admin menu"""
-    
     # Create admin search menu object
     search_menu = Menu("Search Menu", ["Search user transactions", "Search book transactions", "Exit"])
     
@@ -799,7 +770,6 @@ def admin_searching_menu():
 ###################################################################################################
 def get_description():
     """Get description input from the user"""
-    
     # Get user description
     while True:
         print("Usage example: Young wizard Harry Potter receives his invitational letter to study at Hogwarts\n")
@@ -825,7 +795,6 @@ def get_description():
     
 def admin_add_book():
     """Adds a book to the database"""
-    
     # Get isbn attribute input 
     isbn = get_isbn()
     
@@ -855,7 +824,6 @@ def admin_add_book():
 
 def admin_remove_book():
     """Removes a book from the database"""
-    
     # Get isbn attribute input 
     isbn = get_isbn()
     
@@ -887,13 +855,11 @@ def admin_remove_book():
     else:
         print("The book does not exist in the database\n")
         
-
 ###################################################################################################
 ##################################       SHOW BALANCE        ######################################
 ###################################################################################################
 def admin_show_balance():
     """Display library's balance"""
-    
     # Get all transaction objects with of type Return
     transactions = Transaction.get_all_type(session, transaction_type="Return")
     
@@ -913,7 +879,6 @@ def admin_show_balance():
 ###################################################################################################
 def get_username():
     """Get username input from the user"""
-    
     while True:
         # Get username input
         username = input("Enter username: ")
@@ -942,7 +907,6 @@ def get_username():
             
 def get_password():
     """Get password input from the user"""
-    
     while True:
         # Get user password
         password = input("Enter password: ")
@@ -968,7 +932,6 @@ def get_password():
 
 def get_password_confirm():
     """Get password confirmation input from the user"""
-    
     while True:
         # Get user password
         password_confirm = input("Enter password confirmation: ")
@@ -994,7 +957,6 @@ def get_password_confirm():
 
 def register_form():
     """Register form, gets user input, validates it and handles validation cases"""
-    
     # Get user registration input
     username = get_username()
     password = get_password()
@@ -1011,7 +973,6 @@ def register_form():
 
 def register():
     """Register user"""
-    
     # Calls user registration form and handles the registration validation
     user = register_form()
 
@@ -1024,7 +985,6 @@ def register():
 
 def log_in_form():
     """Log in form, gets user input, validates it and handles validation cases"""
-    
     # Get user login input
     username = get_username()
     password = get_password()
@@ -1040,7 +1000,6 @@ def log_in_form():
     
 def admin_menu():
     """Displays admin menu"""
-    
     # Create admin main menu object
     admin_menu = Menu("Admin Menu", ["Listing", "Search", "Add book", "Remove Book", "Show balance", "Exit"])
     
@@ -1068,22 +1027,21 @@ def admin_menu():
 def user_menu(user):
     """Displays user menu"""
     # Create user main menu object
-    user_menu = Menu("User Menu", ["Search book", "Rent book", "Return book", "User information", "Exit"])
+    user_menu = Menu("User Menu", ["Search book", "Rent book", "Return book", "Exit"])
     
     # Display main menu and get user input
     while True:
+        
         choice = user_menu.display()
         
         match choice:
             case "1":
-                search_book()
+                search_book_menu()
             case "2":
                 rent_book(user)
             case "3":
                 return_book(user)
             case "4":
-                ...     #user_information()
-            case "5":
                 sys.exit()
             case _:
                 print("Invalid input\n")
@@ -1091,7 +1049,6 @@ def user_menu(user):
 
 def log_in():
     """Logs in"""
-
     # Calls user login form and handles the login authentication
     user = log_in_form()
 
@@ -1106,7 +1063,6 @@ def log_in():
 ###################################################################################################
 def init_menu():
     """Display the initial menu"""
-    
     # Create init menu object
     init_menu = Menu("Library", ["Log-in", "Register", "Exit"])
     
@@ -1127,12 +1083,13 @@ def init_menu():
                 
 def main():
     """Main function"""
-    
     # Load admin accounts into the database
     load_admin_accounts(session, "admin_accounts.json")
     
-    # Load books into the database
-    load_books(session, "books.json")
+    # Check if books have been loaded into the database
+    if Book.get_all(session) is None:
+        # Load books into the database
+        load_books(session, "books.json")
     
     # Calls init menu to be displayed
     init_menu()

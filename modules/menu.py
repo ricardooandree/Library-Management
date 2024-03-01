@@ -12,6 +12,7 @@ class Menu:
         self.options = options
     
     def display(self):
+        """Display the menu"""
         # Create figlet object and set font
         figlet = Figlet()
         figlet.setFont(font="slant")

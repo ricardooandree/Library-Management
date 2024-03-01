@@ -240,6 +240,7 @@ class Book(Base):
     def get_quantity(self):
         return self._quantity
     
+    # Define Class methods/instances
     def display_metadata(books):
         """Displays book metadata
         
@@ -257,7 +258,7 @@ class Book(Base):
             table.append(row)
         
         print(tabulate(table, headers, tablefmt="double_outline"))
-        
+    
     @classmethod
     def authenticate_title(cls, session, title):
         """Authenticates book title
@@ -271,7 +272,6 @@ class Book(Base):
             None: If title does not exist in the database.
             
         This method checks if there's any books with a specific title in the database and filters them by uniqueness.
-        
         """
         # Query to get all books with the given title and distinct isbn
         books = session.query(Book).filter(Book._title == title).distinct(Book._isbn).all()
@@ -295,7 +295,6 @@ class Book(Base):
             None: If author does not exist in the database.
             
         This method checks if there's any books with a specific author in the database and filters them by uniqueness.
-        
         """
         # Query to get all books with the given author and distinct isbn
         books = session.query(Book).filter(Book._author == author).distinct(Book._isbn).all()
@@ -319,7 +318,6 @@ class Book(Base):
             None: If publisher does not exist in the database.
             
         This method checks if there's any books with a specific publisher in the database and filters them by uniqueness.
-        
         """
         # Query to get all books with the given publisher and distinct isbn
         books = session.query(Book).filter(Book._publisher == publisher).distinct(Book._isbn).all()
@@ -343,7 +341,6 @@ class Book(Base):
             None: If genre does not exist in the database.
             
         This method checks if there's any books with a specific genre in the database and filters them by uniqueness.
-        
         """
         # Query to get all books with the given genre and distinct isbn
         books = session.query(Book).filter(Book._genre == genre).distinct(Book._isbn).all()
@@ -367,7 +364,6 @@ class Book(Base):
             None: If edition does not exist in the database.
             
         This method checks if there's any books with a specific edition in the database and filters them by uniqueness.
-        
         """
         # Query to get all books with the given edition and distinct isbn
         books = session.query(Book).filter(Book._edition == edition).distinct(Book._isbn).all()
@@ -391,7 +387,6 @@ class Book(Base):
             None: If publication date does not exist in the database.
             
         This method checks if there's any books with a specific publication date in the database and filters them by uniqueness.
-        
         """
         # Query to get all books with the given publication date and distinct isbn
         books = session.query(Book).filter(Book._publication_date == publication_date).distinct(Book._isbn).all()
@@ -415,7 +410,6 @@ class Book(Base):
             None: If price does not exist in the database.
             
         This method checks if there's any books with a specific price in the database and filters them by uniqueness.
-        
         """
         # Query to get all books with the given price and distinct isbn
         books = session.query(Book).filter(Book._price == price).distinct(Book._isbn).all()
@@ -488,9 +482,9 @@ class Book(Base):
         
         Returns: 
             book: If successfully registered a new book.
-            None: If failed to register a new book. 
+            bool: False if failed to register a new book. 
             
-        This method created a new book object, sets its attributes and adds it to the database.
+        This method creates a new book object, sets its attributes and adds it to the database.
         """
         # Create a new book object
         new_book = Book()
@@ -530,7 +524,7 @@ class Book(Base):
         Returns: 
             bool: True if successfully added a new book
             
-        This method alters the quantity of the specified book to +1 in order to signify that the book was added to the database.
+        This method adds a book to the database, alters the quantity of the specified book to +1 in order to signify that the book was added to the database.
         """
         # Update the quantity of the book
         book.set_quantity(book.get_quantity() + 1)
@@ -551,7 +545,7 @@ class Book(Base):
         Returns:
             bool: True if successfully removed a book from the database, False otherwise.
         
-        This method alters the quantity of the specified book to -1 in order to signify that the book was removed from the database.
+        This method removes a book from the database, alters the quantity of the specified book to -1 in order to signify that the book was removed from the database.
         """
         if book.get_quantity() > 0:
             # Update the quantity of the book
@@ -575,7 +569,7 @@ class Book(Base):
         Returns:
         bool: True if successfully removed a book from the database, False otherwise.
         
-        This method deletes the book from the database.
+        This method deletes the book from the database (irreversibly).
         """
         if book.get_quantity() == 0:
             # Remove the book from the database
@@ -588,7 +582,6 @@ class Book(Base):
         else:
             return False    # Failed to delete a book
         
-
     @classmethod
     def get_all(cls, session):
         """Get all books in the database
@@ -598,6 +591,7 @@ class Book(Base):
             
         Returns:
             books (list): A list of all books in the database.
+            None: If there's no books in the database.
             
         This method queries the database to get all the books in the database.
         """
@@ -619,6 +613,7 @@ class Book(Base):
             
         Returns:
             books (list): A list of all available books in the database.
+            None: If there's no available book in the database.
             
         This method queries the database to get all available the books in the database.
         """
@@ -633,6 +628,14 @@ class Book(Base):
     
     def rent_book(self, session):
         """Rents a book
+        
+        Args:
+            session (Session): The SQLAlchemy session object to perform database queries.
+        
+        Returns:
+            bool: True if successfully rented a book, False otherwise.
+        
+        This method signifies the renting of a book from the database, by altering the quantity of that book.
         """
         # Gets book quantity from the database
         quantity = self.get_quantity()
@@ -647,6 +650,14 @@ class Book(Base):
     
     def return_book(self, session):
         """Returns a book
+        
+        Args:
+            session (Session): The SQLAlchemy session object to perform database queries.
+        
+        Returns:
+            bool: True if successfully returned a book, False otherwise.
+        
+        This method signifies the returning of a book from the database, by altering the quantity of that book.
         """
         # Gets book quantity from the database
         quantity = self.get_quantity()
@@ -661,6 +672,15 @@ class Book(Base):
     
     def calculate_fee(self, return_date, checkout_date):
         """Calculates the renting fee
+        
+        Args:
+            return_date (datetime): The return date of the book.
+            checkout_date (datetime): The checkout date of the book.
+        
+        Returns:
+            float: The renting fee.
+        
+        This method calculates the renting fee based on the difference in days between the return date and the checkout date.
         """
         # Get book price from the database
         price = self.get_price()
