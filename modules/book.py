@@ -553,13 +553,16 @@ class Book(Base):
         
         This method alters the quantity of the specified book to -1 in order to signify that the book was removed from the database.
         """
-        # Update the quantity of the book
-        book.set_quantity(book.get_quantity() - 1)
+        if book.get_quantity() > 0:
+            # Update the quantity of the book
+            book.set_quantity(book.get_quantity() - 1)
+            
+            # Commit the changes to the database
+            session.commit()
         
-        # Commit the changes to the database
-        session.commit()
-        
-        return True    # Successfully removed a book
+            return True    # Successfully removed a book
+        else:
+            return False   # Failed to remove a book
     
     @classmethod
     def delete(cls, session, book):
@@ -574,13 +577,17 @@ class Book(Base):
         
         This method deletes the book from the database.
         """
-        # Remove the book from the database
-        session.delete(book)
+        if book.get_quantity() == 0:
+            # Remove the book from the database
+            session.delete(book)
+            
+            # Commit the changes to the database
+            session.commit()
+            
+            return True    # Successfully deleted a book
+        else:
+            return False    # Failed to delete a book
         
-        # Commit the changes to the database
-        session.commit()
-        
-        return True    # Successfully removed a book
 
     @classmethod
     def get_all(cls, session):

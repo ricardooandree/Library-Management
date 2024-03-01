@@ -43,7 +43,4 @@ def load_books(session, file_path):
         else:
             # Adds copy of the book
             Book.add(session, existing_book)
-            
-            
-def load_transactions(session, file_path):
-    ...
+    

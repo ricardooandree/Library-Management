@@ -287,8 +287,7 @@ class User(Base):
         session.commit()
         
         return True    # Successfully removed a book
-    
-    
+      
     @classmethod
     def get_all_fee(cls, session):
         """Get all users fees in the database

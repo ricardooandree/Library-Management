@@ -594,7 +594,15 @@ def test_add():
     if non_existing_book is not None:
     # Assert if add() returns False -> Failed to add book
         assert Book.add(session, non_existing_book) == True
-     
+
+def test_authenticate_id():
+    # Test authentication of book id
+    book = Book.authenticate_id(session, 1)
+    assert book is not None
+    
+    book = Book.authenticate_id(session, 5)
+    assert book is None
+    
 def test_authenticate_title():
     # Test authentication of book title
     books = Book.authenticate_title(session, "OOP Python Fundamentals")
@@ -671,7 +679,7 @@ def test_get_all():
     books = Book.get_all(session)
     assert books is not None
     assert len(books) == 3
-
+    
 def test_rent_book():
     # Test renting a book
     book = Book.authenticate_isbn(session, "111-2-33-444444-5")
@@ -698,12 +706,25 @@ def test_calculate_fee():
         return_date = datetime.strptime(return_date_str, "%d-%m-%Y").date()
         
         assert book.calculate_fee(return_date, current_date) == 1.9980000000000002
-        
-        
-        
-# TODO:
-# TODO:
-# TODO:
 
-# def test_authenticate_id():
-# def test_get_all_available():
+def test_get_all_available():
+    # Test getting all available books
+    books = Book.get_all_available(session)
+    assert books is not None
+    assert len(books) == 2
+    
+def test_remove():
+    # Test removing a book
+    book = Book.authenticate_isbn(session, "978-0-74-753269-6")
+    assert book.remove(session, book) == True
+    
+    book = Book.authenticate_isbn(session, "111-2-33-444444-5")
+    assert book.remove(session, book) == False
+    
+def test_delete():
+    # Test deleting a book
+    book = Book.authenticate_isbn(session, "978-0-74-753269-6")
+    assert book.delete(session, book) == False
+    
+    book = Book.authenticate_isbn(session, "111-2-33-444444-5")
+    assert book.delete(session, book) == True

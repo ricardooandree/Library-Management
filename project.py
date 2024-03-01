@@ -1,9 +1,7 @@
 ###################################################################################################
 #######################################       IMPORTS       #######################################
 ###################################################################################################
-import os
 import sys
-import random 
 import re
 
 from modules.user import Base
@@ -62,7 +60,9 @@ def basic_string_attribute_validation(string, attribute):
 ###################################################################################################
 # TODO: ADD TESTS TRANSACTION CLASS
 # TODO: ADD PASSWORD SAFETY REQUIREMENTS CHECK
-# TODO: ADD SETTER USER_ID + BOOK_ID VALIDATION IF IT EXISTS???
+# TODO: ONLY LOAD ADMIN ACCOUNTS/DATASET ONCE
+# TODO: ADD TERMINAL CLEAR EVERY TIME IT ENTERS A MENU
+# TODO: FINISH DOCSTRINGS
 
 def get_title():
     """Get title input from the user"""
