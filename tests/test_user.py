@@ -136,6 +136,18 @@ def test_authenticate():
     
     assert User.authenticate(session, "ricardo", "password2") == None
 
+def test_authenticate_id():
+    # Test authenticate user by id
+    assert User.authenticate_id(session, 1) != None
+    
+    assert User.authenticate_id(session, 5) == None
+    
+def test_authenticate_username():
+    # Test authenticate user by username
+    assert User.authenticate_username(session, "ricardo") != None
+    
+    assert User.authenticate_username(session, "john") == None
+
 def test_register():
     # Test register method
     assert User.register(session, "new_user", "iloveyou") != False
@@ -155,10 +167,21 @@ def test_return_book():
     assert user.return_book(session, 10.00) == True
     
     assert user.get_total_fee() == 10.00
-    
-    
-# TODO:
-# TODO:
-# TODO:
 
-# def test_authenticate_id():
+def test_get_all_fee():
+    # Test get all users with fees > 0
+    users = User.get_all_fee(session)
+    assert users is None
+    
+    user = User.authenticate_username(session, "new_user")
+    
+    user.set_total_fee(20.99)
+    
+    users = User.get_all_fee(session)
+    assert len(users) == 1
+    
+def test_remove():
+    # Test remove user
+    user = User.authenticate_username(session, "new_user")
+    
+    assert User.remove(session, user) == True
