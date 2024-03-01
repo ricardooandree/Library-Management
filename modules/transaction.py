@@ -34,6 +34,9 @@ class Transaction(Base):
         if not isinstance(user_id, int):
             raise ValueError("User id must be an integer")
 
+        if user_id <= 0:
+            raise ValueError("User id must be a positive integer")
+        
         # Set user id attribute            
         self._user_id = user_id
     
@@ -41,6 +44,9 @@ class Transaction(Base):
         # Book id attribute validation
         if not isinstance(book_id, int):
             raise ValueError("Book id must be an integer")
+        
+        if book_id <= 0:
+            raise ValueError("Book id must be a positive integer")
         
         # Set book id attribute
         self._book_id = book_id
@@ -155,8 +161,12 @@ class Transaction(Base):
         
     @classmethod
     def authenticate_user_book(cls, session, user_id, book_id, type=None):
-        """Authenticates a specific user rental transactions
+        """Authenticates a transaction by user and book
         """
+        # Check if type is None
+        if type is None:
+            return None
+        
         # Query the database to find a transaction with the specified book and user
         transactions = session.query(Transaction).filter(Transaction._user_id == user_id, Transaction._book_id == book_id, Transaction._type == type).all()
 
@@ -167,8 +177,30 @@ class Transaction(Base):
             return None
     
     @classmethod
+    def authenticate_user_id(cls, session, user_id, type=None):
+        """Authenticates transactions based on a specific user ID
+        """
+        # Check if type is None
+        if type is None:
+            return None
+        
+        # Query the database to find a transaction with the specified user ID
+        transactions = session.query(Transaction).filter(Transaction._user_id == user_id, Transaction._type == type, Transaction._status == True).all()
+
+        # Check if transaction exists in the database
+        if transactions: 
+            return transactions
+        else:
+            return None
+        
+    @classmethod
     def authenticate_book_id(cls, session, book_id, type=None):
-        """Authenticates transactions based on a specific book ID"""
+        """Authenticates transactions based on a specific book ID
+        """
+        # Check if type is None
+        if type is None:
+            return None
+        
         # Query the database to find a transaction with the specified ISBN
         transactions = session.query(Transaction).filter(Transaction._book_id == book_id, Transaction._type == type, Transaction._status == True).all()
 

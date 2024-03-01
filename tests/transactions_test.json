@@ -1,0 +1,7 @@
+{
+    "transactions": [
+        {"user_id": 1, "book_id": 1, "checkout_date": "2024-03-01", "return_date": "2024-04-10", "fee": 9.99, "status": true, "type": "Rental"},
+        {"user_id": 1, "book_id": 1, "checkout_date": "2024-03-01", "return_date": "2024-04-05", "fee": 9.99, "status": false, "type": "Early Return"},
+        {"user_id": 1, "book_id": 2, "checkout_date": "2024-03-02", "return_date": "2024-04-02", "fee": 15.99, "status": true, "type": "Rental"}
+    ]
+}

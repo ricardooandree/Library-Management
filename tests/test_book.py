@@ -538,7 +538,7 @@ def test_register():
     
     # Assert if register() returns True -> Book sucessfully registered
     if Book.authenticate_isbn(session, valid_book["isbn"]) is None:
-        assert Book.register(session, valid_book["title"], valid_book["author"], valid_book["publisher"], valid_book["genre"], valid_book["edition"], valid_book["publication_date"], valid_book["description"], valid_book["price"], valid_book["isbn"]) == True
+        assert Book.register(session, valid_book["title"], valid_book["author"], valid_book["publisher"], valid_book["genre"], valid_book["edition"], valid_book["publication_date"], valid_book["description"], valid_book["price"], valid_book["isbn"]) != False
         
     invalid_book = {
         "title": "OOP Python Fundamentals",

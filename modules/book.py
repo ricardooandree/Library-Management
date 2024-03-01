@@ -515,7 +515,7 @@ class Book(Base):
             # Commit the changes to the database
             session.commit()
 
-            return True    # Successfully registered a new book
+            return new_book    # Successfully registered a new book
         else:
             return False    # Failed to register a new book
         
