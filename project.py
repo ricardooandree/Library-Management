@@ -20,7 +20,6 @@ from tabulate import tabulate
 #################################       APP CONFIGURATION        ##################################
 ###################################################################################################
 # FIXME: Requirements.txt
-# FIXME: Better book dataset
 # Initialize the SQLAlchemy engine for sqlite
 engine = create_engine('sqlite:///library.db')  # Adjust the database URL as needed
 
@@ -48,8 +47,8 @@ def basic_string_attribute_validation(string, attribute):
     if not string:
         return f"{attribute} cannot be empty\n"
     
-    if not string[0].isalpha() or not string[-1].isalpha():
-        return f"{attribute} must not start or end with non-alphabetical characters\n"
+    if string[0] == ' ' or string[-1] == ' ':
+        return f"{attribute} must not start or end with spaces\n"
     
     if len(string) > 100:
         return f"{attribute} must have a maximum of 100 characters\n"
@@ -138,6 +137,9 @@ def get_genre():
         if isinstance(validation_result, str):
             print(validation_result)
             continue
+        
+        # Return valid genre
+        return genre
             
        
 def get_edition():
@@ -166,7 +168,7 @@ def get_publication_date():
     """Get publication date input from the user"""
     # Get user publication date
     while True:
-        print("Usage example: 25-02-2024")
+        print("Usage example: 02-25-2024")
         
         # Get user input
         publication_date = input("Enter publication date: ")
@@ -178,11 +180,11 @@ def get_publication_date():
             
         # Ensure input follows the format dd-mm-yyyy
         if len(publication_date) != 10 or publication_date.count('-') != 2:
-            print("Publication date must be of format dd-mm-yyyy\n")
+            print("Publication date must be of format mm-dd-yyyy\n")
             continue
     
         # Split the input after initial checks
-        day, month, year = publication_date.split('-')
+        month, day, year = publication_date.split('-')
         
         # Validate day, month, and year components
         if not (day.isdigit() and month.isdigit() and year.isdigit()):
@@ -783,8 +785,8 @@ def get_description():
             print("Description cannot be empty\n")
             continue
         
-        if not description[0].isalpha() or not description[-1].isalpha():
-            print("Description must not start or end with non-alpha characters\n")
+        if description[0] == ' ' or description[-1] == ' ':
+            print("Description must not start or end with spaces\n")
             continue
         
         if len(description) > 500:

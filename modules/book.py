@@ -11,7 +11,7 @@ from tabulate import tabulate
 #######################################       HELPERS       #######################################
 ###################################################################################################
 # Headers for table printing
-headers = ["Title", "Author", "Publisher", "Genre", "Edition", "Publication Date", "Description", "Price", "ISBN"]
+headers = ["Title", "Author", "Publisher", "Genre", "Edition", "Publication Date", "Price", "ISBN"]
 
 # Helper function for string attributes validation
 def basic_string_attribute_validation(string, attribute):
@@ -22,8 +22,8 @@ def basic_string_attribute_validation(string, attribute):
     if not string:
         return f"{attribute} cannot be empty"
     
-    if not string[0].isalpha() or not string[-1].isalpha():
-        return f"{attribute} must not start or end with non-alphabetical characters"
+    if string[0] == ' ' or string[-1] == ' ':
+        return f"{attribute} must not start or end with spaces"
     
     if len(string) > 100:
         return f"{attribute} must have a maximum of 100 characters"
@@ -70,11 +70,6 @@ class Book(Base):
         
         if isinstance(validation_result, str):
             raise ValueError(validation_result)
-    
-        # Pattern FirstName LastName for author attribute and validation
-        pattern = r'^[a-zA-Z]+\s[a-zA-Z]+$'
-        if not re.match(pattern, author):
-            raise ValueError("Author string should be of pattern: FirstName LastName with alphabetic characters only")
         
         # Set author attribute
         self._author = author
@@ -121,10 +116,10 @@ class Book(Base):
         
         # Ensure input follows the format dd-mm-yyyy
         if len(publication_date) != 10 or publication_date.count('-') != 2:
-            raise ValueError("Publication date must be of format dd-mm-yyyy")
+            raise ValueError("Publication date must be of format mm-dd-yyyy")
 
         # Split the input after initial checks
-        day, month, year = publication_date.split('-')
+        month, day, year = publication_date.split('-')
         
         # Validate day, month, and year components
         if not (day.isdigit() and month.isdigit() and year.isdigit()):
@@ -155,8 +150,8 @@ class Book(Base):
         if len(description) > 500:
             raise ValueError("Description must have a maximum of 500 characters")
 
-        if not description[0].isalpha() or not description[-1].isalpha():
-            raise ValueError("Description must not start or end with non-alphabetical characters")
+        if description[0] == ' ' or description[-1] == ' ':
+            raise ValueError("Description must not start or end with spaces")
 
         # Set the description
         self._description = description
@@ -254,7 +249,7 @@ class Book(Base):
         """
         table = []
         for book in books:
-            row = [book.get_title(), book.get_author(), book.get_publisher(), book.get_genre(), book.get_edition(), book.get_publication_date(), book.get_description(), book.get_price(), book.get_isbn()]
+            row = [book.get_title(), book.get_author(), book.get_publisher(), book.get_genre(), book.get_edition(), book.get_publication_date(), book.get_price(), book.get_isbn()]
             table.append(row)
         
         print(tabulate(table, headers, tablefmt="double_outline"))
